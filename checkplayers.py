@@ -59,7 +59,7 @@ class checkplayers(minqlx.Plugin):
             id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), -1)
             active = self.db.zrangebyscore(PLAYER_KEY.format(steamids[i]) + ":bans", time.time(), "+inf", withscores=True)
             if active:
-                longest_ban = self.db.hgetall(PLAYER_KEY.format(steamids[i]) + ":bans" + ":{}".format(bans[-1][0]))
+                longest_ban = self.db.hgetall(PLAYER_KEY.format(steamids[i]) + ":bans" + ":{}".format(active[-1][0]))
                 expires = datetime.datetime.strptime(longest_ban["expires"], TIME_FORMAT)
                 reason = longest_ban["reason"]
                 if (expires - datetime.datetime.now()).total_seconds() > 0:
