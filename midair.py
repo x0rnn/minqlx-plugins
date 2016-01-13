@@ -42,15 +42,15 @@ class midair(minqlx.Plugin):
                 if height > minheight and distance > mindistance:
                     self.db.zadd(MIDAIR_KEY.format(map_name), distance, "{},{},{}".format(k_id, v_id, int(time.time())))
                     self.db.zadd(PLAYER_KEY.format(k_id) + ":midair:" + str(map_name), distance, "{},{}".format(v_id, int(time.time())))
-                    if distance <= float(record[1]):
+                    if distance <= record[0][1]:
                         msg = "{} killed {} from a distance of: ^1{} ^7units.".format(killer_name, victim_name, round(distance))
                         self.play_sound("sound/vo_evil/holy_shit")
                         self.msg(msg)
-                    elif distance > float(record[1]):
+                    elif distance > record[0][1]:
                         msg = "^1New map record^7! {} killed {} from a distance of: ^1{} ^7units.".format(killer_name, victim_name, round(distance))
                         self.play_sound("sound/vo_evil/new_high_score")
                         self.msg(msg)
-                        record[1] = distance
+                        record[0][1] = distance
 
     def cmd_topshots(self, player, msg, channel):
         x = 5 #how many topshots to list
@@ -94,5 +94,7 @@ class midair(minqlx.Plugin):
         global record
         if self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True):
             record = self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True)
+            self.msg(record)
         else:
-            record = [0, 0.0]
+            record = []
+            record.append(['bla', 0.0])
