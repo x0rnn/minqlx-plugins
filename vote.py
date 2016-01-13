@@ -82,7 +82,7 @@ class vote(minqlx.Plugin):
             return
 
         if vote.lower() == "mode":
-            if args.lower() == "pql":
+            if args.lower() == "pql": #pql here uses CPMA values for plasmagun: 18 dmg, 20 splashradius, 100% knockback, and not as outlined on: http://www.syncerror.com/wiki/index.php/Quake_Live:PQL
                 self.callvote("dmflags 32;g_damage_pg 18;g_knockback_g 0.5;g_knockback_pg 1;g_knockback_rl 1.10;g_knockback_z 40;g_max_knockback 160;"
                               "g_velocity_gl 800;g_respawn_delay_max 3500;g_respawn_delay_min 500;"
                               "g_startingHealthBonus 0;g_startingAmmo_mg 50;g_weaponRespawn 10;weapon_reload_rg 1250;weapon_reload_sg 950;"
