@@ -28,6 +28,8 @@ class midair(minqlx.Plugin):
         self.add_command("clearmytopshots", self.cmd_clearmytopshots)
         self.add_command("clearkillstats", self.cmd_clearkillstats, 5)
 
+        self.record = 0.0
+
     def handle_death(self, victim, killer, data):
         if data['KILLER'] is not None:
             if data['KILLER']['WEAPON'] == "ROCKET" and data['VICTIM']['AIRBORNE']:
@@ -56,15 +58,15 @@ class midair(minqlx.Plugin):
                     victim_score = 0
                     if PLAYER_KEY.format(v_id) + ":midair:" + k_id in self.db:
                         victim_score = self.db[PLAYER_KEY.format(v_id) + ":midair:" + k_id]
-                    if distance <= record[0][1]:
+                    if distance <= self.record:
                         msg = "{} killed {} from a distance of: ^1{} ^7units. Score: ^2{}^7:^2{}".format(killer_name, victim_name, round(distance), killer_score, victim_score)
                         self.play_sound("sound/vo_evil/holy_shit")
                         self.msg(msg)
-                    elif distance > record[0][1]:
+                    elif distance > self.record:
                         msg = "^1New map record^7! {} killed {} from a distance of: ^1{} ^7units. Score: ^2{}^7:^2{}".format(killer_name, victim_name, round(distance), killer_score, victim_score)
                         self.play_sound("sound/vo_evil/new_high_score")
                         self.msg(msg)
-                        record[0][1] = distance
+                        self.record = distance
 
     def cmd_topshots(self, player, msg, channel):
         x = 5 #how many topshots to list
@@ -116,7 +118,7 @@ class midair(minqlx.Plugin):
     def cmd_cleartopshots(self, player, msg, channel):
         map_name = self.game.map.lower()
         del self.db[MIDAIR_KEY.format(map_name)]
-        record[0] = (['bla', 0.0])
+        self.record = 0.0
         channel.reply("Topshots for map ^1{} ^7were cleared.".format(map_name))
 
     def cmd_clearmytopshots(self, player, msg, channel):
@@ -130,9 +132,5 @@ class midair(minqlx.Plugin):
         channel.reply("Killstats for map ^1{} ^7were cleared.".format(map_name))
 
     def handle_map(self, map_name, factory):
-        global record
         if self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True):
-            record = self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True)
-        else:
-            record = []
-            record.append(['bla', 0.0])
+            self.record = self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True)[0][1]
