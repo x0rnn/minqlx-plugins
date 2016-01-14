@@ -21,8 +21,10 @@ class midair(minqlx.Plugin):
         self.add_hook("map", self.handle_map)
         self.add_command(("topshots", "top"), self.cmd_topshots)
         self.add_command(("mytopshots", "mytop"), self.cmd_mytopshots)
+        self.add_command(("kills", "killstats"), self.cmd_killstats)
         self.add_command("cleartopshots", self.cmd_cleartopshots, 5)
         self.add_command("clearmytopshots", self.cmd_clearmytopshots)
+        self.add_command("clearkillstats", self.cmd_clearkillstats, 5)
 
     def handle_death(self, victim, killer, data):
         if data['KILLER'] is not None:
@@ -44,6 +46,7 @@ class midair(minqlx.Plugin):
                 mindistance = 300 #min length distance to register midairs
                 if height > minheight and distance > mindistance:
                     self.db.zadd(MIDAIR_KEY.format(map_name), distance, "{},{},{}".format(k_id, v_id, int(time.time())))
+                    self.db.zincrby(MIDAIR_KEY.format(map_name) + ":count", k_id, 1)
                     self.db.zadd(PLAYER_KEY.format(k_id) + ":midair:" + str(map_name), distance, "{},{}".format(v_id, int(time.time())))
                     self.db.sadd(PLAYER_KEY.format(k_id) + ":midair", v_id)
                     self.db.incr(PLAYER_KEY.format(k_id) + ":midair:" + v_id)
@@ -94,6 +97,20 @@ class midair(minqlx.Plugin):
                 player.tell("^2" + str(i) + "^7: Victim: {}, distance: ^1{} ^7units.".format(v_id_name, round(distance)))
             i += 1
 
+    def cmd_killstats(self, player, msg, channel):
+        x = 5 #how many to list
+        map_name = self.game.map.lower()
+        killstats = self.db.zrevrange(MIDAIR_KEY.format(map_name) + ":count", 0, x-1, withscores=True)
+        player.tell("^7Most midair kills for map ^1" + map_name + "^7:\n")
+        i = 1
+        for steamid, count in killstats:
+            name = self.db.lindex(PLAYER_KEY.format(steamid), -1)
+            if not name:
+                player.tell("^2" + str(i) + "^7: BOT^7: ^1{} ^7kills.".format(int(count)))
+            else:
+                player.tell("^2" + str(i) + "^7: {}^7: ^1{} ^7kills.".format(name, int(count)))
+            i += 1
+
     def cmd_cleartopshots(self, player, msg, channel):
         map_name = self.game.map.lower()
         del self.db[MIDAIR_KEY.format(map_name)]
@@ -104,6 +121,11 @@ class midair(minqlx.Plugin):
         map_name = self.game.map.lower()
         del self.db[PLAYER_KEY.format(player.steam_id) + ":midair:" + str(map_name)]
         channel.reply("Your topshots for map ^1{} ^7were cleared.".format(map_name))
+
+    def cmd_clearkillstats(self, player, msg, channel):
+        map_name = self.game.map.lower()
+        del self.db[MIDAIR_KEY.format(map_name) + ":count"]
+        channel.reply("Killstats for map ^1{} ^7were cleared.".format(map_name))
 
     def handle_map(self, map_name, factory):
         global record
