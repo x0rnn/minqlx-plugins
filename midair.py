@@ -95,7 +95,6 @@ class midair(minqlx.Plugin):
         global record
         if self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True):
             record = self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True)
-            self.msg(record)
         else:
             record = []
             record.append(['bla', 0.0])
