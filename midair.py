@@ -88,6 +88,7 @@ class midair(minqlx.Plugin):
     def cmd_cleartopshots(self, player, msg, channel):
         map_name = self.game.map.lower()
         del self.db[MIDAIR_KEY.format(map_name)]
+        record[0][1] = 0.0
         channel.reply("Topshots for map ^1{} ^7were cleared.".format(map_name))
 
     def handle_map(self, map_name, factory):
