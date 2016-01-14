@@ -4,7 +4,9 @@
 # If the map record has been broken, then the "New high score" announcement will be used instead.
 # Also shows a kill counter of Killer:Victim (taken from pummel.py by mattiZed).
 # !top will list top X map records, !mytop will list your top X map records.
+# !kills/!killstats will list top X players with most midair kills and their kill count.
 # !cleartopshots (admins only) will clear all map topshots, !clearmytopshots will clear your topshots.
+# !clearkillstats (admins only) will clear all map killstats.
 # by x0rnn, mattiZed, kanzo, iou; thanks guys :)
 
 import minqlx
