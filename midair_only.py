@@ -90,9 +90,9 @@ class midair_only(minqlx.Plugin):
             k_id_name = self.db.lindex(PLAYER_KEY.format(k_id), -1)
             v_id_name = self.db.lindex(PLAYER_KEY.format(v_id), -1)
             if not k_id_name:
-                player.tell("^2" + str(i) + "^7: ^1Rocket^7BOT killed {} from a distance of: ^1{} ^7units.".format(v_id_name, round(distance)))
+                player.tell("^2" + str(i) + "^7: BOT killed {} from a distance of: ^1{} ^7units.".format(v_id_name, round(distance)))
             elif not v_id_name:
-                player.tell("^2" + str(i) + "^7: {} killed ^1Rocket^7BOT from a distance of: ^1{} ^7units.".format(k_id_name, round(distance)))
+                player.tell("^2" + str(i) + "^7: {} killed BOT from a distance of: ^1{} ^7units.".format(k_id_name, round(distance)))
             else:
                 player.tell("^2" + str(i) + "^7: {} killed {} from a distance of: ^1{} ^7units.".format(k_id_name, v_id_name, round(distance)))
             i += 1
@@ -107,7 +107,7 @@ class midair_only(minqlx.Plugin):
             v_id, timestamp = map(lambda el: int(el), shot.split(","))
             v_id_name = self.db.lindex(PLAYER_KEY.format(v_id), -1)
             if not v_id_name:
-                player.tell("^2" + str(i) + "^7: Victim: ^1Rocket^7BOT, distance: ^1{} ^7units.".format(round(distance)))
+                player.tell("^2" + str(i) + "^7: Victim: BOT, distance: ^1{} ^7units.".format(round(distance)))
             else:
                 player.tell("^2" + str(i) + "^7: Victim: {}, distance: ^1{} ^7units.".format(v_id_name, round(distance)))
             i += 1
@@ -121,7 +121,7 @@ class midair_only(minqlx.Plugin):
         for steamid, count in killstats:
             name = self.db.lindex(PLAYER_KEY.format(steamid), -1)
             if not name:
-                player.tell("^2" + str(i) + "^7: ^1Rocket^7BOT^7: ^1{} ^7kills.".format(int(count)))
+                player.tell("^2" + str(i) + "^7: BOT: ^1{} ^7kills.".format(int(count)))
             else:
                 player.tell("^2" + str(i) + "^7: {}^7: ^1{} ^7kills.".format(name, int(count)))
             i += 1
