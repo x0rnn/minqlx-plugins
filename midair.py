@@ -4,9 +4,8 @@
 # If the map record has been broken, then the "New high score" announcement will be used instead.
 # Also shows a kill counter of Killer:Victim (taken from pummel.py by mattiZed).
 # !top will list top X map records, !mytop will list your top X map records.
-# !kills/!killstats will list top X players with most midair kills and their kill count.
-# !cleartopshots (admins only) will clear all map topshots, !clearmytopshots will clear your topshots.
-# !clearkillstats (admins only) will clear all map killstats.
+# !kills/!killstats will list top X players with most midair kills and their kill count for the current map.
+# (admins only) !cleartopshots will clear all map topshots, !clearkillstats will clear all map killstats.
 # by x0rnn, mattiZed, kanzo, iou; thanks guys :)
 
 import minqlx
@@ -25,7 +24,6 @@ class midair(minqlx.Plugin):
         self.add_command(("mytopshots", "mytop"), self.cmd_mytopshots)
         self.add_command(("kills", "killstats"), self.cmd_killstats)
         self.add_command("cleartopshots", self.cmd_cleartopshots, 5)
-        self.add_command("clearmytopshots", self.cmd_clearmytopshots)
         self.add_command("clearkillstats", self.cmd_clearkillstats, 5)
 
         self.record = 0.0
@@ -120,11 +118,6 @@ class midair(minqlx.Plugin):
         del self.db[MIDAIR_KEY.format(map_name)]
         self.record = 0.0
         channel.reply("Topshots for map ^1{} ^7were cleared.".format(map_name))
-
-    def cmd_clearmytopshots(self, player, msg, channel):
-        map_name = self.game.map.lower()
-        del self.db[PLAYER_KEY.format(player.steam_id) + ":midair:" + str(map_name)]
-        channel.reply("Your topshots for map ^1{} ^7were cleared.".format(map_name))
 
     def cmd_clearkillstats(self, player, msg, channel):
         map_name = self.game.map.lower()
