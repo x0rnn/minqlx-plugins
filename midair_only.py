@@ -35,11 +35,12 @@ class midair_only(minqlx.Plugin):
 
     def handle_frame(self):
         for pl in self.players():
-            if pl.health > 0:
-                if pl.velocity().z == 0.0:
-                    pl.health = 6666
-                else:
-                    pl.health = 100
+            if pl.team != "spectator":
+                if pl.health > 0:
+                    if pl.velocity().z == 0.0:
+                        pl.health = 6666
+                    else:
+                        pl.health = 100
 
     def handle_death(self, victim, killer, data):
         if data['KILLER'] is not None:
