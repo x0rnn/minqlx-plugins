@@ -134,3 +134,5 @@ class midair(minqlx.Plugin):
     def handle_map(self, map_name, factory):
         if self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True):
             self.record = self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True)[0][1]
+        else:
+            self.record = 0.0
