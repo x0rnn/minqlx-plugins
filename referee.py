@@ -20,6 +20,7 @@
 # The initial password is set on line 34 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches with !refpass "password" (without quotation marks), which will also reset all current referees.
 # To show the currently set password, type !getrefpass.
+# by x0rnn
 
 import minqlx
 import re
