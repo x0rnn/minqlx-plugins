@@ -10,9 +10,9 @@
 # ref speclock         - Disable freecam spectator mode for dead players.
 # ref specunlock       - Enable freecam spectator mode for dead players.
 # ref alltalk <0/1>    - Disable/enable communication between teams.
-# ref put <id> [r/b/s] - Move a player to red/blue/spectators.\n"
-# ref mute <id>        - Mute a player.\n"
-# ref unmute <id>      - Unmute a player.\n"
+# ref put <id> [r/b/s] - Move a player to red/blue/spectators.
+# ref mute <id>        - Mute a player.
+# ref unmute <id>      - Unmute a player.
 #########################################################################
 # The commands can be input via the console, for example: /ref allready, or through the chat: !ref allready
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
