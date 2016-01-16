@@ -4,7 +4,7 @@
 # ref allready         - Force all players to be 'ready' and start the match.
 # ref abort            - Abandon the current game and return to warmup.
 # ref pause            - Pause the current match indefinitely.
-# ref unpause          - Unause the current match.
+# ref unpause          - Unpause the current match.
 # ref lock [r/b]       - Stop players from joining the team.
 # ref unlock [r/b]     - Allow players to join the team.
 # ref speclock         - Disable freecam spectator mode for dead players.
@@ -44,7 +44,7 @@ class referee(minqlx.Plugin):
                         "^5allready               ^3- ^7Force all players to be 'ready' and start the match.\n"
                         "^5abort                  ^3- ^7Abandon the current game and return to warmup.\n"
                         "^5pause                  ^3- ^7Pause the current match indefinitely.\n"
-                        "^5unpause                ^3- ^7Unause the current match.\n"
+                        "^5unpause                ^3- ^7Unpause the current match.\n"
                         "^5lock [r/b]             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
                         "^5unlock [r/b]           ^3- ^7Allow players to join the team. (both if no arg given)\n"
                         "^5speclock               ^3- ^7Disable freecam spectator mode for dead players.\n"
