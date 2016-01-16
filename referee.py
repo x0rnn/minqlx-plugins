@@ -5,8 +5,8 @@
 # ref abort            - Abandon the current game and return to warmup.
 # ref pause            - Pause the current match indefinitely.
 # ref unpause          - Unpause the current match.
-# ref lock [r/b]       - Stop players from joining the team.
-# ref unlock [r/b]     - Allow players to join the team.
+# ref lock <r/b>       - Stop players from joining the team.
+# ref unlock <r/b>     - Allow players to join the team.
 # ref speclock         - Disable freecam spectator mode for dead players.
 # ref specunlock       - Enable freecam spectator mode for dead players.
 # ref alltalk <0/1>    - Disable/enable communication between teams.
@@ -40,19 +40,19 @@ class referee(minqlx.Plugin):
             caller.tell("^5Password correct, referee status granted. /ref help to list all commands.")
 
         elif cmd.lower() == "ref help" and caller.steam_id in self.referees:
-            caller.tell("^3Use /ref or !ref <cmd> [arg]:\n"
-                        "^5allready               ^3- ^7Force all players to be 'ready' and start the match.\n"
-                        "^5abort                  ^3- ^7Abandon the current game and return to warmup.\n"
-                        "^5pause                  ^3- ^7Pause the current match indefinitely.\n"
-                        "^5unpause                ^3- ^7Unpause the current match.\n"
-                        "^5lock [r/b]             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
-                        "^5unlock [r/b]           ^3- ^7Allow players to join the team. (both if no arg given)\n"
-                        "^5speclock               ^3- ^7Disable freecam spectator mode for dead players.\n"
-                        "^5specunlock             ^3- ^7Enable freecam spectator mode for dead players.\n"
-                        "^5alltalk [0/1]          ^3- ^7Disable/enable communication between teams.\n"
-                        "^5put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
-                        "^5mute <id>              ^3- ^7Mute a player.\n"
-                        "^5unmute <id>            ^3- ^7Unmute a player.")
+            caller.tell("^3Use /ref or !ref cmd <arg>:\n"
+                        "^5ref allready               ^3- ^7Force all players to be 'ready' and start the match.\n"
+                        "^5ref abort                  ^3- ^7Abandon the current game and return to warmup.\n"
+                        "^5ref pause                  ^3- ^7Pause the current match indefinitely.\n"
+                        "^5ref unpause                ^3- ^7Unpause the current match.\n"
+                        "^5ref lock <r/b>             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
+                        "^5ref unlock <r/b>           ^3- ^7Allow players to join the team. (both if no arg given)\n"
+                        "^5ref speclock               ^3- ^7Disable freecam spectator mode for dead players.\n"
+                        "^5ref specunlock             ^3- ^7Enable freecam spectator mode for dead players.\n"
+                        "^5ref alltalk <0/1>          ^3- ^7Disable/enable communication between teams.\n"
+                        "^5ref put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
+                        "^5ref mute <id>              ^3- ^7Mute a player.\n"
+                        "^5ref unmute <id>            ^3- ^7Unmute a player.")
 
         elif cmd.lower() == "ref allready" and caller.steam_id in self.referees:
             if self.game.state == "warmup":
