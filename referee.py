@@ -13,8 +13,8 @@
 #########################################################################
 # The commands need to be prefixed with /ref, for example: /ref allready
 # To get referee status, type /ref pass "password" (without quotation marks)
-# The initial password is set on line 26 of this file ("change_me").
-# Change the password with !refpass "password" (without quotation marks)
+# The initial password is set on line 26 of this file ("change_me"), change it to something unique.
+# Change the password in-game/between matches with !refpass "password" (without quotation marks)
 
 import minqlx
 
