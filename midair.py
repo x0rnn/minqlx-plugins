@@ -74,8 +74,8 @@ class midair(minqlx.Plugin):
         i = 1
         for shot, distance in topshots:
             k_id, v_id, timestamp = map(lambda el: int(el), shot.split(","))
-            k_id_name = self.db.lindex(PLAYER_KEY.format(k_id), -1)
-            v_id_name = self.db.lindex(PLAYER_KEY.format(v_id), -1)
+            k_id_name = self.db.lindex(PLAYER_KEY.format(k_id), 0)
+            v_id_name = self.db.lindex(PLAYER_KEY.format(v_id), 0)
             if not k_id_name:
                 player.tell("^2" + str(i) + "^7: BOT killed {} from a distance of: ^1{} ^7units.".format(v_id_name, round(distance)))
             elif not v_id_name:
@@ -92,7 +92,7 @@ class midair(minqlx.Plugin):
         i = 1
         for shot, distance in topshots:
             v_id, timestamp = map(lambda el: int(el), shot.split(","))
-            v_id_name = self.db.lindex(PLAYER_KEY.format(v_id), -1)
+            v_id_name = self.db.lindex(PLAYER_KEY.format(v_id), 0)
             if not v_id_name:
                 player.tell("^2" + str(i) + "^7: Victim: BOT, distance: ^1{} ^7units.".format(round(distance)))
             else:
@@ -106,7 +106,7 @@ class midair(minqlx.Plugin):
         player.tell("^7Most midair kills for map ^1" + map_name + "^7:\n")
         i = 1
         for steamid, count in killstats:
-            name = self.db.lindex(PLAYER_KEY.format(steamid), -1)
+            name = self.db.lindex(PLAYER_KEY.format(steamid), 0)
             if not name:
                 player.tell("^2" + str(i) + "^7: BOT^7: ^1{} ^7kills.".format(int(count)))
             else:
