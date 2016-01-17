@@ -35,6 +35,7 @@ class referee(minqlx.Plugin):
         self.add_command("ref", self.cmd_ref)
         self.add_command("referees", self.cmd_referees)
         self.add_command("votereferee", self.cmd_votereferee, 5, usage="<id>")
+        self.add_command("voteunreferee", self.cmd_voteunreferee, 5, usage="<id>")
 
         self.password = "CHANGE_ME"
         self.referees = []
@@ -59,6 +60,16 @@ class referee(minqlx.Plugin):
             else:
                 return minqlx.RET_USAGE
 
+    def cmd_voteunreferee(self, player, msg, channel):
+        if len(msg) < 2:
+            return minqlx.RET_USAGE
+        else:
+            if self.player(int(msg[1])):
+                self.referees.remove(self.player(int(msg[1])).steam_id)
+                self.msg(self.player(int(msg[1])).name + " has been unrefereed.")
+            else:
+                return minqlx.RET_USAGE
+
     def handle_vote_called(self, caller, vote, args):
         if not self.get_cvar("qlx_allowRefVote", bool):
             caller.tell("Referee voting has been disabled.")
@@ -78,6 +89,21 @@ class referee(minqlx.Plugin):
                         return minqlx.RET_STOP_ALL
                 else:
                     caller.tell("^2/cv referee <id>^7 is the usage for this callvote command.")
+                    return minqlx.RET_STOP_ALL
+            elif vote.lower() == "unreferee":
+                if (0 <= int(args) < 64):
+                    if self.player(int(args)) and self.player(int(args)).steam_id in self.referees:
+                        self.callvote("qlx !voteunreferee " + args, "^3Unreferee " + self.player(int(args)).name + " ^3?")
+                        self.msg("{}^7 called a vote.".format(caller.name))
+                        return minqlx.RET_STOP_ALL
+                    elif self.player(int(args)) and self.player(int(args)).steam_id not in self.referees:
+                        caller.tell("That player is not a referee.")
+                        return minqlx.RET_STOP_ALL
+                    else:
+                        caller.tell("No player with ID: ^2" + str(args) + "^7 on the server.")
+                        return minqlx.RET_STOP_ALL
+                else:
+                    caller.tell("^2/cv unreferee <id>^7 is the usage for this callvote command.")
                     return minqlx.RET_STOP_ALL
 
     def handle_client_command(self, caller, cmd):
