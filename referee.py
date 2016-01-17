@@ -7,8 +7,7 @@
 # ref unpause          - Unause the current match.
 # ref lock [r/b]       - Stop players from joining the team.
 # ref unlock [r/b]     - Allow players to join the team.
-# ref speclock         - Disable freecam spectator mode for dead players.
-# ref specunlock       - Enable freecam spectator mode for dead players.
+# ref freecam <0/1>    - Disable/enable freecam spectator mode for dead players.
 # ref alltalk <0/1>    - Disable/enable communication between teams.
 # ref put <id> [r/b/s] - Move a player to red/blue/spectators.
 # ref mute <id>        - Mute a player.
@@ -20,7 +19,7 @@
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
 # "ref kick" and "ref tempban" are disabled by default, set qlx_allowRefKick and qlx_allowRefKickban to 1 to enable them.
 # To get referee status, type /ref pass "password" (without quotation marks).
-# The initial password is set on line 43 of this file ("CHANGE_ME"), change it to something unique.
+# The initial password is set on line 42 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
 # To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
 # Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote commands are: /cv referee <id>, /cv unreferee <id>
@@ -122,11 +121,10 @@ class referee(minqlx.Plugin):
                         "^5abort                  ^3- ^7Abandon the current game and return to warmup.\n"
                         "^5pause                  ^3- ^7Pause the current match indefinitely.\n"
                         "^5unpause                ^3- ^7Unause the current match.\n"
-                        "^5lock [r/b]             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
-                        "^5unlock [r/b]           ^3- ^7Allow players to join the team. (both if no arg given)\n"
-                        "^5speclock               ^3- ^7Disable freecam spectator mode for dead players.\n"
-                        "^5specunlock             ^3- ^7Enable freecam spectator mode for dead players.\n"
-                        "^5alltalk [0/1]          ^3- ^7Disable/enable communication between teams.\n"
+                        "^5lock <r/b>             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
+                        "^5unlock <r/b>           ^3- ^7Allow players to join the team. (both if no arg given)\n"
+                        "^5freecam <0/1>          ^3- ^7Disable/enable freecam spectator mode for dead players.\n"
+                        "^5alltalk <0/1>          ^3- ^7Disable/enable communication between teams.\n"
                         "^5put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
                         "^5mute <id>              ^3- ^7Mute a player.\n"
                         "^5unmute <id>            ^3- ^7Unmute a player.\n"
@@ -185,19 +183,19 @@ class referee(minqlx.Plugin):
             self.msg("^6Referee ^7" + str(caller) + " unlocked the ^4blue ^7team.")
             self.unlock("blue")
 
-        elif cmd.lower() == "ref speclock" and caller.steam_id in self.referees:
+        elif (cmd.lower() == "ref freecam 0" or cmd.lower() == "ref freecam off") and caller.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(caller) + " disabled freecam spectator mode.")
             self.set_cvar("g_teamSpecFreeCam", "0")
 
-        elif cmd.lower() == "ref specunlock" and caller.steam_id in self.referees:
+        elif (cmd.lower() == "ref freecam 1" or cmd.lower() == "ref freecam on") and caller.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(caller) + " enabled freecam spectator mode.")
             self.set_cvar("g_teamSpecFreeCam", "1")
 
-        elif cmd.lower() == "ref alltalk 0" and caller.steam_id in self.referees:
+        elif (cmd.lower() == "ref alltalk 0" or cmd.lower() == "ref alltalk off") and caller.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(caller) + " disabled communication between teams.")
             self.set_cvar("g_allTalk", "0")
 
-        elif cmd.lower() == "ref alltalk 1" and caller.steam_id in self.referees:
+        elif (cmd.lower() == "ref alltalk 1" or cmd.lower() == "ref alltalk on") and caller.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(caller) + " enabled communication between teams.")
             self.set_cvar("g_allTalk", "1")
 
@@ -310,14 +308,14 @@ class referee(minqlx.Plugin):
             self.unlock("blue")
             return minqlx.RET_STOP_ALL
 
-        elif msg[1].lower() == "speclock" and player.steam_id in self.referees:
+        elif msg[1].lower() == "freecam" and (msg[2] == "0" or msg[2].lower() == "off") and player.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(player) + " disabled freecam spectator mode.")
             self.set_cvar("g_teamSpecFreeCam", "0")
             return minqlx.RET_STOP_ALL
 
-        elif msg[1].lower() == "specunlock" and player.steam_id in self.referees:
+        elif msg[1].lower() == "freecam" and (msg[2] == "1" or msg[2].lower() == "on") and player.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(player) + " enabled freecam spectator mode.")
-            self.set_cvar("g_teamSpecFreeCam", "0")
+            self.set_cvar("g_teamSpecFreeCam", "1")
             return minqlx.RET_STOP_ALL
 
         elif msg[1].lower() == "alltalk" and (msg[2] == "0" or msg[2].lower() == "off") and player.steam_id in self.referees:
