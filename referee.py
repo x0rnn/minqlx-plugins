@@ -17,10 +17,10 @@
 # The commands can be input via the console, for example: /ref allready, or through the chat: !ref allready
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
 # To get referee status, type /ref pass "password" (without quotation marks).
-# The initial password is set on line 39 of this file ("CHANGE_ME"), change it to something unique.
+# The initial password is set on line 40 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
 # To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
-# Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote command is: /cv referee <id>
+# Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote commands are: /cv referee <id>, /cv unreferee <id>
 
 import minqlx
 import re
