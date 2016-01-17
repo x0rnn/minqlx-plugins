@@ -4,23 +4,22 @@
 # ref allready         - Force all players to be 'ready' and start the match.
 # ref abort            - Abandon the current game and return to warmup.
 # ref pause            - Pause the current match indefinitely.
-# ref unpause          - Unpause the current match.
-# ref lock <r/b>       - Stop players from joining the team.
-# ref unlock <r/b>     - Allow players to join the team.
+# ref unpause          - Unause the current match.
+# ref lock [r/b]       - Stop players from joining the team.
+# ref unlock [r/b]     - Allow players to join the team.
 # ref speclock         - Disable freecam spectator mode for dead players.
 # ref specunlock       - Enable freecam spectator mode for dead players.
 # ref alltalk <0/1>    - Disable/enable communication between teams.
-# ref put <id> [r/b/s] - Move a player to red/blue/spectators.
-# ref mute <id>        - Mute a player.
-# ref unmute <id>      - Unmute a player.
+# ref put <id> [r/b/s] - Move a player to red/blue/spectators.\n"
+# ref mute <id>        - Mute a player.\n"
+# ref unmute <id>      - Unmute a player.\n"
 #########################################################################
 # The commands can be input via the console, for example: /ref allready, or through the chat: !ref allready
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
 # To get referee status, type /ref pass "password" (without quotation marks).
-# The initial password is set on line 34 of this file ("CHANGE_ME"), change it to something unique.
-# You can change the password in-game/between matches with !refpass "password" (without quotation marks), which will also reset all current referees.
-# To show the currently set password, type !getrefpass.
-# by x0rnn
+# The initial password is set on line 36 of this file ("CHANGE_ME"), change it to something unique.
+# You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
+# To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
 
 import minqlx
 import re
@@ -28,12 +27,22 @@ import re
 class referee(minqlx.Plugin):
     def __init__(self):
         self.add_hook("client_command", self.handle_client_command)
-        self.add_command("refpass", self.cmd_refpass, 5, usage="<password> (no spaces)")
+        self.add_hook("player_loaded", self.player_loaded)
+        self.add_command("setrefpass", self.cmd_setrefpass, 5, usage="<password> (no spaces)")
         self.add_command("getrefpass", self.cmd_getrefpass, 5)
         self.add_command("ref", self.cmd_ref)
+        self.add_command("referees", self.cmd_referees)
 
         self.password = "CHANGE_ME"
         self.referees = []
+
+    def player_loaded(self, player):
+        if self.referees:
+            player.tell("^6Referees ^7currently on the server:\n")
+            for refs in self.referees:
+                for p in self.players():
+                    if p.steam_id == refs:
+                        player.tell(p.name)
 
     def handle_client_command(self, caller, cmd):
         if cmd == "ref pass " + self.password:
@@ -41,19 +50,19 @@ class referee(minqlx.Plugin):
             caller.tell("^5Password correct, referee status granted. /ref help to list all commands.")
 
         elif cmd.lower() == "ref help" and caller.steam_id in self.referees:
-            caller.tell("^3Use /ref or !ref cmd <arg>:\n"
-                        "^5ref allready               ^3- ^7Force all players to be 'ready' and start the match.\n"
-                        "^5ref abort                  ^3- ^7Abandon the current game and return to warmup.\n"
-                        "^5ref pause                  ^3- ^7Pause the current match indefinitely.\n"
-                        "^5ref unpause                ^3- ^7Unpause the current match.\n"
-                        "^5ref lock <r/b>             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
-                        "^5ref unlock <r/b>           ^3- ^7Allow players to join the team. (both if no arg given)\n"
-                        "^5ref speclock               ^3- ^7Disable freecam spectator mode for dead players.\n"
-                        "^5ref specunlock             ^3- ^7Enable freecam spectator mode for dead players.\n"
-                        "^5ref alltalk <0/1>          ^3- ^7Disable/enable communication between teams.\n"
-                        "^5ref put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
-                        "^5ref mute <id>              ^3- ^7Mute a player.\n"
-                        "^5ref unmute <id>            ^3- ^7Unmute a player.")
+            caller.tell("^3Use /ref or !ref <cmd> [arg]:\n"
+                        "^5allready               ^3- ^7Force all players to be 'ready' and start the match.\n"
+                        "^5abort                  ^3- ^7Abandon the current game and return to warmup.\n"
+                        "^5pause                  ^3- ^7Pause the current match indefinitely.\n"
+                        "^5unpause                ^3- ^7Unause the current match.\n"
+                        "^5lock [r/b]             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
+                        "^5unlock [r/b]           ^3- ^7Allow players to join the team. (both if no arg given)\n"
+                        "^5speclock               ^3- ^7Disable freecam spectator mode for dead players.\n"
+                        "^5specunlock             ^3- ^7Enable freecam spectator mode for dead players.\n"
+                        "^5alltalk [0/1]          ^3- ^7Disable/enable communication between teams.\n"
+                        "^5put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
+                        "^5mute <id>              ^3- ^7Mute a player.\n"
+                        "^5unmute <id>            ^3- ^7Unmute a player.")
 
         elif cmd.lower() == "ref allready" and caller.steam_id in self.referees:
             if self.game.state == "warmup":
@@ -257,7 +266,7 @@ class referee(minqlx.Plugin):
         else:
             return minqlx.RET_STOP_ALL
 
-    def cmd_refpass(self, player, msg, channel):
+    def cmd_setrefpass(self, player, msg, channel):
         if len(msg) < 2:
             return minqlx.RET_USAGE
 
@@ -268,4 +277,15 @@ class referee(minqlx.Plugin):
 
     def cmd_getrefpass(self, player, msg, channel):
         player.tell("Referee password is: ^2" + self.password +"^7.")
+        return minqlx.RET_STOP_ALL
+
+    def cmd_referees(self, player, msg, channel):
+        if self.referees:
+            player.tell("^6Referees ^7currently on the server:\n")
+            for refs in self.referees:
+                for p in self.players():
+                    if p.steam_id == refs:
+                        player.tell(p.name)
+        else:
+            player.tell("There are no referees currently on the server.")
         return minqlx.RET_STOP_ALL
