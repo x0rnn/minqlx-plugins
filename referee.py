@@ -17,9 +17,10 @@
 # The commands can be input via the console, for example: /ref allready, or through the chat: !ref allready
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
 # To get referee status, type /ref pass "password" (without quotation marks).
-# The initial password is set on line 36 of this file ("CHANGE_ME"), change it to something unique.
+# The initial password is set on line 39 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
 # To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
+# Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote command is: /cv referee <id>
 
 import minqlx
 import re
@@ -28,13 +29,16 @@ class referee(minqlx.Plugin):
     def __init__(self):
         self.add_hook("client_command", self.handle_client_command)
         self.add_hook("player_loaded", self.player_loaded)
+        self.add_hook("vote_called", self.handle_vote_called)
         self.add_command("setrefpass", self.cmd_setrefpass, 5, usage="<password> (no spaces)")
         self.add_command("getrefpass", self.cmd_getrefpass, 5)
         self.add_command("ref", self.cmd_ref)
         self.add_command("referees", self.cmd_referees)
+        self.add_command("votereferee", self.cmd_votereferee, 5, usage="<id>")
 
         self.password = "CHANGE_ME"
         self.referees = []
+        self.set_cvar_once("qlx_allowRefVote", "0")
 
     def player_loaded(self, player):
         if self.referees:
@@ -43,6 +47,38 @@ class referee(minqlx.Plugin):
                 for p in self.players():
                     if p.steam_id == refs:
                         player.tell(p.name)
+
+    def cmd_votereferee(self, player, msg, channel):
+        if len(msg) < 2:
+            return minqlx.RET_USAGE
+        else:
+            if self.player(int(msg[1])):
+                self.referees.append(self.player(int(msg[1])).steam_id)
+                self.msg(self.player(int(msg[1])).name + " has been made a ^6Referee^7.")
+                self.player(int(msg[1])).tell("^5/ref help to list all referee commands.")
+            else:
+                return minqlx.RET_USAGE
+
+    def handle_vote_called(self, caller, vote, args):
+        if not self.get_cvar("qlx_allowRefVote", bool):
+            caller.tell("Referee voting has been disabled.")
+            return minqlx.RET_STOP_ALL
+        elif not (self.get_cvar("g_allowSpecVote", bool)) and caller.team == "spectator":
+            caller.tell("You are not allowed to call a vote as a spectator.")
+            return minqlx.RET_STOP_ALL
+        else:
+            if vote.lower() == "referee":
+                if (0 <= int(args) < 64):
+                    if self.player(int(args)):
+                        self.callvote("qlx !votereferee " + args, "^3Set " + self.player(int(args)).name + " ^3as a referee?")
+                        self.msg("{}^7 called a vote.".format(caller.name))
+                        return minqlx.RET_STOP_ALL
+                    else:
+                        caller.tell("No player with ID: ^2" + str(args) + "^7 on the server.")
+                        return minqlx.RET_STOP_ALL
+                else:
+                    caller.tell("^2/cv referee <id>^7 is the usage for this callvote command.")
+                    return minqlx.RET_STOP_ALL
 
     def handle_client_command(self, caller, cmd):
         if cmd == "ref pass " + self.password:
