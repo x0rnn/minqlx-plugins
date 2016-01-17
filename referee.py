@@ -1,4 +1,4 @@
-# referee.py, gives referee status to a player with the password or one that has been callvoted and enables the following console commands:
+# referee.py, gives referee status to a player with the password or one that has been callvoted (if enabled) and enables the following console commands:
 #########################################################################
 # ref help             - Lists all referee commands
 # ref allready         - Force all players to be 'ready' and start the match.
