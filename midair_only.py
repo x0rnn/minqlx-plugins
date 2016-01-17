@@ -140,7 +140,7 @@ class midair_only(minqlx.Plugin):
         if self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True):
             self.record = self.db.zrevrange(MIDAIR_KEY.format(map_name), 0, 0, withscores=True)[0][1]
         else:
-            self.record = 0
+            self.record = 0.0
 
         self.set_cvar("dmflags", "16")
         self.set_cvar("g_startingWeapons", "16")
