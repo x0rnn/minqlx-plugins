@@ -156,3 +156,4 @@ class midair_only(minqlx.Plugin):
         self.set_cvar("g_spawnItemHoldable", "0")
         self.set_cvar("g_spawnItemHealth", "0")
         self.set_cvar("g_spawnItemWeapons", "0")
+        self.set_cvar("pmove_BunnyHop", "0")
