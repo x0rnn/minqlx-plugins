@@ -10,14 +10,17 @@
 # ref speclock         - Disable freecam spectator mode for dead players.
 # ref specunlock       - Enable freecam spectator mode for dead players.
 # ref alltalk <0/1>    - Disable/enable communication between teams.
-# ref put <id> [r/b/s] - Move a player to red/blue/spectators.\n"
-# ref mute <id>        - Mute a player.\n"
-# ref unmute <id>      - Unmute a player.\n"
+# ref put <id> [r/b/s] - Move a player to red/blue/spectators.
+# ref mute <id>        - Mute a player.
+# ref unmute <id>      - Unmute a player.
+# ref kick <id>        - Kick a player.
+# ref tempban <id>     - Temporarily kickban a player.
 #########################################################################
 # The commands can be input via the console, for example: /ref allready, or through the chat: !ref allready
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
+# "ref kick" and "ref kickban" are disabled by default, set qlx_allowRefKick and qlx_allowRefKickban to 1 to enable them.
 # To get referee status, type /ref pass "password" (without quotation marks).
-# The initial password is set on line 40 of this file ("CHANGE_ME"), change it to something unique.
+# The initial password is set on line 43 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
 # To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
 # Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote commands are: /cv referee <id>, /cv unreferee <id>
@@ -40,6 +43,8 @@ class referee(minqlx.Plugin):
         self.password = "CHANGE_ME"
         self.referees = []
         self.set_cvar_once("qlx_allowRefVote", "0")
+        self.set_cvar_once("qlx_allowRefKick", "0")
+        self.set_cvar_once("qlx_allowRefKickban", "0")
 
     def player_loaded(self, player):
         if self.referees:
@@ -124,7 +129,9 @@ class referee(minqlx.Plugin):
                         "^5alltalk [0/1]          ^3- ^7Disable/enable communication between teams.\n"
                         "^5put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
                         "^5mute <id>              ^3- ^7Mute a player.\n"
-                        "^5unmute <id>            ^3- ^7Unmute a player.")
+                        "^5unmute <id>            ^3- ^7Unmute a player.\n"
+                        "^5kick <id>              ^3- ^7Kick a player.\n"
+                        "^5tempban <id>           ^3- ^7Temporarily kickban a player.")
 
         elif cmd.lower() == "ref allready" and caller.steam_id in self.referees:
             if self.game.state == "warmup":
@@ -217,6 +224,28 @@ class referee(minqlx.Plugin):
                 self.player(int(id)).unmute()
             else:
                 caller.tell("No player with ID: ^2" + id + "^7.")
+
+        elif re.search(r"ref kick \d+", cmd.lower()) and caller.steam_id in self.referees:
+            if self.get_cvar("qlx_allowRefKick", bool):
+                id = re.search(r"\d+", cmd.lower()).group()
+                if self.player(int(id)):
+                    self.msg("^6Referee ^7" + str(caller) + " kicked " + self.player(int(id)).name + ".")
+                    self.player(int(id)).kick()
+                else:
+                    caller.tell("No player with ID: ^2" + id + "^7.")
+            else:
+                caller.tell("Kicking has been disabled for referees.")
+
+        elif re.search(r"ref tempban \d+", cmd.lower()) and caller.steam_id in self.referees:
+            if self.get_cvar("qlx_allowRefKickban", bool):
+                id = re.search(r"\d+", cmd.lower()).group()
+                if self.player(int(id)):
+                    self.msg("^6Referee ^7" + str(caller) + " temporarily kickbanned " + self.player(int(id)).name + ".")
+                    self.player(int(id)).tempban()
+                else:
+                    caller.tell("No player with ID: ^2" + id + "^7.")
+            else:
+                caller.tell("Kickbanning has been disabled for referees.")
 
     def cmd_ref(self, player, msg, channel):
         if msg[1].lower() == "allready" and player.steam_id in self.referees:
@@ -324,6 +353,30 @@ class referee(minqlx.Plugin):
             else:
                 player.tell("No player with ID: ^2" + msg[2] + "^7.")
             return minqlx.RET_STOP_ALL
+
+        elif msg[1].lower() == "kick" and (0 <= int(msg[2]) < 64) and player.steam_id in self.referees:
+            if self.get_cvar("qlx_allowRefKick", bool):
+                if self.player(int(msg[2])):
+                    self.msg("^6Referee ^7" + str(player) + " kicked " + self.player(int(msg[2])).name + ".")
+                    self.player(int(msg[2])).unmute()
+                else:
+                    player.tell("No player with ID: ^2" + msg[2] + "^7.")
+                return minqlx.RET_STOP_ALL
+            else:
+                player.tell("Kicking has been disabled for referees.")
+                return minqlx.RET_STOP_ALL
+
+        elif msg[1].lower() == "tempban" and (0 <= int(msg[2]) < 64) and player.steam_id in self.referees:
+            if self.get_cvar("qlx_allowRefKickban", bool):
+                if self.player(int(msg[2])):
+                    self.msg("^6Referee ^7" + str(player) + " temporarily kickbanned " + self.player(int(msg[2])).name + ".")
+                    self.player(int(msg[2])).unmute()
+                else:
+                    player.tell("No player with ID: ^2" + msg[2] + "^7.")
+                return minqlx.RET_STOP_ALL
+            else:
+                player.tell("Kickbanning has been disabled for referees.")
+                return minqlx.RET_STOP_ALL
 
         else:
             return minqlx.RET_STOP_ALL
