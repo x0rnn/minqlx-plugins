@@ -18,7 +18,7 @@
 #########################################################################
 # The commands can be input via the console, for example: /ref allready, or through the chat: !ref allready
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
-# "ref kick" and "ref kickban" are disabled by default, set qlx_allowRefKick and qlx_allowRefKickban to 1 to enable them.
+# "ref kick" and "ref tempban" are disabled by default, set qlx_allowRefKick and qlx_allowRefKickban to 1 to enable them.
 # To get referee status, type /ref pass "password" (without quotation marks).
 # The initial password is set on line 43 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
