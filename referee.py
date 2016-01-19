@@ -1,14 +1,16 @@
-# referee.py, gives referee status to a player with the password or one that has been callvoted (if enabled) and enables the following commands:
+# referee.py by x0rnn, gives referee status to a player with the password or one that has been callvoted (if enabled) and enables the following commands:
 #########################################################################
+# ref pass <password>  - Authenticate as a referee with a password
 # ref help             - Lists all referee commands
 # ref allready         - Force all players to be 'ready' and start the match.
 # ref abort            - Abandon the current game and return to warmup.
 # ref pause            - Pause the current match indefinitely.
 # ref unpause          - Unause the current match.
-# ref lock [r/b]       - Stop players from joining the team.
-# ref unlock [r/b]     - Allow players to join the team.
+# ref lock <r/b>       - Stop players from joining the team.
+# ref unlock <r/b>     - Allow players to join the team.
+# ref muteteams <0/1>  - Only allow say_team for red/blue/spec once the match starts.
+# ref alltalk <0/1>    - Disable/enable voice communication between teams.
 # ref freecam <0/1>    - Disable/enable freecam spectator mode for dead players.
-# ref alltalk <0/1>    - Disable/enable communication between teams.
 # ref put <id> [r/b/s] - Move a player to red/blue/spectators.
 # ref mute <id>        - Mute a player.
 # ref unmute <id>      - Unmute a player.
@@ -19,7 +21,7 @@
 # The only exceptions being "/ref pass" and "/ref help", which are console-only.
 # "ref kick" and "ref tempban" are disabled by default, set qlx_allowRefKick and qlx_allowRefKickban to 1 to enable them.
 # To get referee status, type /ref pass "password" (without quotation marks).
-# The initial password is set on line 42 of this file ("CHANGE_ME"), change it to something unique.
+# The initial password is set on line 44 of this file ("CHANGE_ME"), change it to something unique.
 # You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
 # To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
 # Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote commands are: /cv referee <id>, /cv unreferee <id>
@@ -44,6 +46,7 @@ class referee(minqlx.Plugin):
         self.set_cvar_once("qlx_allowRefVote", "0")
         self.set_cvar_once("qlx_allowRefKick", "0")
         self.set_cvar_once("qlx_allowRefKickban", "0")
+        self.set_cvar_once("qlx_muteTeams", "0")
 
     def player_loaded(self, player):
         if self.referees:
@@ -123,8 +126,9 @@ class referee(minqlx.Plugin):
                         "^5unpause                ^3- ^7Unause the current match.\n"
                         "^5lock <r/b>             ^3- ^7Stop players from joining the team. (both if no arg given)\n"
                         "^5unlock <r/b>           ^3- ^7Allow players to join the team. (both if no arg given)\n"
+                        "^5muteteams <0/1>        ^3- ^7Only allow say_team for red/blue/spec once the match starts.\n"
+                        "^5alltalk <0/1>          ^3- ^7Disable/enable voice communication between teams.\n"
                         "^5freecam <0/1>          ^3- ^7Disable/enable freecam spectator mode for dead players.\n"
-                        "^5alltalk <0/1>          ^3- ^7Disable/enable communication between teams.\n"
                         "^5put <id> [r/b/s]       ^3- ^7Move a player to red/blue/spectators.\n"
                         "^5mute <id>              ^3- ^7Mute a player.\n"
                         "^5unmute <id>            ^3- ^7Unmute a player.\n"
@@ -199,6 +203,14 @@ class referee(minqlx.Plugin):
             self.msg("^6Referee ^7" + str(caller) + " enabled communication between teams.")
             self.set_cvar("g_allTalk", "1")
 
+        elif (cmd.lower() == "ref muteteams 0" or cmd.lower() == "ref muteteams off") and caller.steam_id in self.referees:
+            self.msg("^6Referee ^7" + str(caller) + " unmuted the teams.")
+            self.set_cvar("qlx_muteTeams", "0")
+
+        elif (cmd.lower() == "ref muteteams 1" or cmd.lower() == "ref muteteams on") and caller.steam_id in self.referees:
+            self.msg("^6Referee ^7" + str(caller) + " muted the teams (only say_team allowed).")
+            self.set_cvar("qlx_muteTeams", "1")
+
         elif re.search(r"ref put \d+ s", cmd.lower()) and caller.steam_id in self.referees:
             id = re.search(r"\d+", cmd.lower()).group()
             if self.player(int(id)):
@@ -244,6 +256,13 @@ class referee(minqlx.Plugin):
                     caller.tell("No player with ID: ^2" + id + "^7.")
             else:
                 caller.tell("Kickbanning has been disabled for referees.")
+
+        if self.game.state != "warmup":
+            if self.get_cvar("qlx_muteTeams", bool):
+                if cmd.lower().startswith("say ") or cmd.lower().startswith("tell "):
+                    if not (caller.privileges in ["admin", "mod"] or self.db.has_permission(caller.steam_id, 4) or caller.steam_id in self.referees):
+                        caller.tell("Only team chat is enabled during the match.")
+                        return minqlx.RET_STOP_ALL
 
     def cmd_ref(self, player, msg, channel):
         if msg[1].lower() == "allready" and player.steam_id in self.referees:
@@ -326,6 +345,16 @@ class referee(minqlx.Plugin):
         elif msg[1].lower() == "alltalk" and (msg[2] == "1" or msg[2].lower() == "on") and player.steam_id in self.referees:
             self.msg("^6Referee ^7" + str(player) + " enabled communication between teams.")
             self.set_cvar("g_allTalk", "1")
+            return minqlx.RET_STOP_ALL
+
+        elif msg[1].lower() == "muteteams" and (msg[2] == "0" or msg[2].lower() == "off") and player.steam_id in self.referees:
+            self.msg("^6Referee ^7" + str(player) + " unmuted the teams.")
+            self.set_cvar("qlx_muteTeams", "0")
+            return minqlx.RET_STOP_ALL
+
+        elif msg[1].lower() == "muteteams" and (msg[2] == "1" or msg[2].lower() == "on") and player.steam_id in self.referees:
+            self.msg("^6Referee ^7" + str(player) + " muted the teams (only say_team allowed)")
+            self.set_cvar("qlx_muteTeams", "1")
             return minqlx.RET_STOP_ALL
 
         elif msg[1].lower() == "put" and (0 <= int(msg[2]) < 64) and (msg[3] == "s" or msg[3] == "spec" or msg[3] == "spectator") and player.steam_id in self.referees:
