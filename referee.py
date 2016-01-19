@@ -22,8 +22,8 @@
 # "ref kick" and "ref tempban" are disabled by default, set qlx_allowRefKick and qlx_allowRefKickban to 1 to enable them.
 # To get referee status, type /ref pass "password" (without quotation marks).
 # The initial password is set on line 44 of this file ("CHANGE_ME"), change it to something unique.
-# You can change the password in-game/between matches (minqlx admin only) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
-# To show the currently set password, type !getrefpass (minqlx admin only); to show a list of referees currently on the server, type !referees.
+# You can change the password in-game/between matches (minqlx perm 4) with !setrefpass "password" (without quotation marks), which will also reset all current referees.
+# To show the currently set password, type !getrefpass (minqlx perm 4); to show a list of referees currently on the server, type !referees.
 # Voting for referees is disabled by default, set qlx_allowRefVote to 1 to enable it. If enabled, the vote commands are: /cv referee <id>, /cv unreferee <id>
 
 import minqlx
@@ -34,8 +34,8 @@ class referee(minqlx.Plugin):
         self.add_hook("client_command", self.handle_client_command)
         self.add_hook("player_loaded", self.player_loaded)
         self.add_hook("vote_called", self.handle_vote_called)
-        self.add_command("setrefpass", self.cmd_setrefpass, 5, usage="<password> (no spaces)")
-        self.add_command("getrefpass", self.cmd_getrefpass, 5)
+        self.add_command("setrefpass", self.cmd_setrefpass, 4, usage="<password> (no spaces)")
+        self.add_command("getrefpass", self.cmd_getrefpass, 4)
         self.add_command("ref", self.cmd_ref)
         self.add_command("referees", self.cmd_referees)
         self.add_command("votereferee", self.cmd_votereferee, 5, usage="<id>")
