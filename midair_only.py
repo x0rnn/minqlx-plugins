@@ -42,7 +42,7 @@ class midair_only(minqlx.Plugin):
 
     def handle_death(self, victim, killer, data):
         if data['KILLER'] is not None:
-            if data['KILLER']['WEAPON'] == "ROCKET" and data['VICTIM']['AIRBORNE']:
+            if data['KILLER']['WEAPON'] == "ROCKET" and data['MOD'] == "ROCKET" and data['VICTIM']['AIRBORNE']:
                 k_X = data['KILLER']['POSITION']['X']
                 k_Y = data['KILLER']['POSITION']['Y']
                 k_Z = data['KILLER']['POSITION']['Z']
