@@ -85,7 +85,7 @@ class checkplayers(minqlx.Plugin):
             tmp2 += str(tmp[2]) + ","
         tmp2.split(",")
         tmp2 = tmp2[:-1]
-        
+
         i = 0
         player.tell("^2Permission levels:\n")
         for steamids in playerlist:
@@ -97,6 +97,9 @@ class checkplayers(minqlx.Plugin):
             i += 1
 
         self.adminlist.sort(key=lambda p: p[2], reverse=True)
+        if not any(str(minqlx.owner()) for x in self.adminlist):
+            owner_name = self.db.lindex(PLAYER_KEY.format(minqlx.owner()), 0)
+            self.adminlist.insert(0, (owner_name, str(minqlx.owner()), "5"))
         for id_name, steamid, perm in self.adminlist:
             player.tell(id_name + " ^7(" + steamid + "^7) ^2Level: ^6" + perm)
         self.adminlist = []
