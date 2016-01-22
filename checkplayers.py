@@ -99,3 +99,4 @@ class checkplayers(minqlx.Plugin):
         self.adminlist.sort(key=lambda p: p[2], reverse=True)
         for id_name, steamid, perm in self.adminlist:
             player.tell(id_name + " ^7(" + steamid + "^7) ^2Level: ^6" + perm)
+        self.adminlist = []
