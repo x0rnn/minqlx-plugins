@@ -142,7 +142,7 @@ class midair_only(minqlx.Plugin):
         else:
             self.record = 0.0
 
-        self.set_cvar("dmflags", "16")
+        self.set_cvar("dmflags", "28")
         self.set_cvar("g_startingWeapons", "16")
         self.set_cvar("g_startingHealthBonus", "0")
         self.set_cvar("g_splashdamage_rl", "0")
