@@ -34,7 +34,7 @@ class checkplayers(minqlx.Plugin):
         player.tell("^2Silenced players:\n")
         for steamids in playerlist:
             steamids = tmp2.split(",")
-            id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), -1)
+            id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
             active = self.db.zrangebyscore(PLAYER_KEY.format(steamids[i]) + ":silences", time.time(), "+inf", withscores=True)
             if active:
                 longest_silence = self.db.hgetall(PLAYER_KEY.format(steamids[i]) + ":silences" + ":{}".format(active[-1][0]))
@@ -62,7 +62,7 @@ class checkplayers(minqlx.Plugin):
         player.tell("^2Banned players:\n")
         for steamids in playerlist:
             steamids = tmp2.split(",")
-            id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), -1)
+            id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
             active = self.db.zrangebyscore(PLAYER_KEY.format(steamids[i]) + ":bans", time.time(), "+inf", withscores=True)
             if active:
                 longest_ban = self.db.hgetall(PLAYER_KEY.format(steamids[i]) + ":bans" + ":{}".format(active[-1][0]))
@@ -91,7 +91,7 @@ class checkplayers(minqlx.Plugin):
         for steamids in playerlist:
             steamids = tmp2.split(",")
             if self.db.has_permission(steamids[i], 1):
-                id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), -1)
+                id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
                 perm = self.db.get(PLAYER_KEY.format(steamids[i]) + ":permission")
                 self.adminlist.append((id_name, steamids[i], perm))
             i += 1
