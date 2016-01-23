@@ -1,4 +1,4 @@
-# checkplayers.py, a plugin to list all players with permission > 1, banned (excluding leaverbanned) and silenced players
+# checkplayers.py, a plugin to list all players with permission >= 1, banned (excluding leaverbanned) and silenced players
 # !permissions
 # !banned
 # !silenced
@@ -97,7 +97,7 @@ class checkplayers(minqlx.Plugin):
             i += 1
 
         self.adminlist.sort(key=lambda p: p[2], reverse=True)
-        if not any(str(minqlx.owner()) for x in self.adminlist):
+        if not str(minqlx.owner()) in (item[1] for item in self.adminlist):
             owner_name = self.db.lindex(PLAYER_KEY.format(minqlx.owner()), 0)
             self.adminlist.insert(0, (owner_name, str(minqlx.owner()), "5"))
         for id_name, steamid, perm in self.adminlist:
