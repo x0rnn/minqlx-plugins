@@ -99,7 +99,7 @@ class checkplayers(minqlx.Plugin):
         self.adminlist.sort(key=lambda p: p[2], reverse=True)
         if not str(minqlx.owner()) in (item[1] for item in self.adminlist):
             owner_name = self.db.lindex(PLAYER_KEY.format(minqlx.owner()), 0)
-            self.adminlist.insert(0, (owner_name, str(minqlx.owner()), "5"))
+            self.adminlist.insert(0, (owner_name, str(minqlx.owner()), "1337"))
         for id_name, steamid, perm in self.adminlist:
             player.tell(id_name + " ^7(" + steamid + "^7) ^2Level: ^6" + perm)
         self.adminlist = []
