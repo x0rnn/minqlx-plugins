@@ -306,7 +306,7 @@ class vote(minqlx.Plugin):
                 caller.tell("^7Midair mode can only be voted in VQL mode, please do ^2/cv mode vql^7 first.")
                 return minqlx.RET_STOP_ALL
             elif args.lower() == "on" and not self.get_cvar("pmove_AirControl", bool):
-                self.callvote("dmflags 16;g_startingWeapons 16;g_startingArmor 999;g_startingHealthBonus 0;g_splashdamage_rl 0;g_damage_rl 150;g_knockback_rl 1.80;g_knockback_z 700;g_infiniteAmmo 1;g_spawnItemPowerup 0;g_spawnItemAmmo 0;g_spawnItemArmor 0;g_spawnItemHoldable 0;g_spawnItemHealth 0;g_spawnItemWeapons 0;map_restart", "Enable rockets-only midair mode?")
+                self.callvote("dmflags 28;g_startingWeapons 16;g_startingArmor 999;g_startingHealthBonus 0;g_splashdamage_rl 0;g_damage_rl 150;g_knockback_rl 1.80;g_knockback_z 700;g_infiniteAmmo 1;g_spawnItemPowerup 0;g_spawnItemAmmo 0;g_spawnItemArmor 0;g_spawnItemHoldable 0;g_spawnItemHealth 0;g_spawnItemWeapons 0;map_restart", "Enable rockets-only midair mode?")
                 self.msg("{}^7 called a vote.".format(caller.name))
                 return minqlx.RET_STOP_ALL
             elif args.lower() == "off" and self.get_cvar("pmove_AirControl", bool):
