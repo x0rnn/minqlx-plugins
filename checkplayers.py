@@ -1,6 +1,7 @@
-# checkplayers.py, a plugin to list all players with permission >= 1, banned (excluding leaverbanned) and silenced players
+# checkplayers.py, a plugin to list all players with permission >= 1, banned, leaver-banned and silenced players
 # !permissions
 # !banned
+# !leaverbanned
 # !silenced
 
 import minqlx
@@ -16,6 +17,7 @@ class checkplayers(minqlx.Plugin):
         self.add_command("silenced", self.cmd_silenced, 4)
         self.add_command("banned", self.cmd_banned, 4)
         self.add_command("permissions", self.cmd_permissions, 4)
+        self.add_command("leaverbanned", self.cmd_leaverbanned, 4)
 
         self.adminlist = []
 
@@ -42,9 +44,9 @@ class checkplayers(minqlx.Plugin):
                 reason = longest_silence["reason"]
                 if (expires - datetime.datetime.now()).total_seconds() > 0:
                     if reason:
-                        player.tell("^6{} ^7(^6{}^7): ^6{}^7:^6 {}^7.".format(steamids[i], id_name, expires, reason))
+                        player.tell("{} ^7({}): ^6{}^7:^6 {}^7.".format(id_name, steamids[i], expires, reason))
                     else:
-                        player.tell("^6{} ^7(^6{}^7): ^6{}^7.".format(steamids[i], id_name, expires))
+                        player.tell("{} ^7({}): ^6{}^7.".format(id_name, steamids[i], expires))
             i += 1
 
     def cmd_banned(self, player, msg, channel):
@@ -70,9 +72,9 @@ class checkplayers(minqlx.Plugin):
                 reason = longest_ban["reason"]
                 if (expires - datetime.datetime.now()).total_seconds() > 0:
                     if reason:
-                        player.tell("^6{} ^7(^6{}^7): ^6{}^7:^6 {}^7.".format(steamids[i], id_name, expires, reason))
+                        player.tell("{} ^7({}): ^6{}^7:^6 {}^7.".format(id_name, steamids[i], expires, reason))
                     else:
-                        player.tell("^6{} ^7(^6{}^7): ^6{}^7.".format(steamids[i], id_name, expires))
+                        player.tell("{} ^7({}): ^6{}^7.".format(id_name, steamids[i], expires))
             i += 1
 
     def cmd_permissions(self, player, msg, channel):
@@ -99,7 +101,45 @@ class checkplayers(minqlx.Plugin):
         self.adminlist.sort(key=lambda p: p[2], reverse=True)
         if not str(minqlx.owner()) in (item[1] for item in self.adminlist):
             owner_name = self.db.lindex(PLAYER_KEY.format(minqlx.owner()), 0)
-            self.adminlist.insert(0, (owner_name, str(minqlx.owner()), "1337"))
+            self.adminlist.insert(0, (owner_name, str(minqlx.owner()), "5"))
         for id_name, steamid, perm in self.adminlist:
-            player.tell(id_name + " ^7(" + steamid + "^7) ^2Level: ^6" + perm)
+            player.tell("{} ^7({}) - ^2Level^7: ^6{}^7.".format(id_name, steamid, perm))
         self.adminlist = []
+
+    def cmd_leaverbanned(self, player, msg, channel):
+        if not self.get_cvar("qlx_leaverBan", bool):
+            return None
+
+        playerlist = self.db.keys("minqlx:players:*:games_left")
+        tmp = ""
+        tmp2 = ""
+
+        for sublist in playerlist:
+            tmp = str(sublist).split(":")
+            tmp2 += str(tmp[2]) + ","
+        tmp2.split(",")
+        tmp2 = tmp2[:-1]
+
+        min_games_completed = self.get_cvar("qlx_leaverBanMinimumGames", int)
+        warn_threshold = self.get_cvar("qlx_leaverBanWarnThreshold", float)
+        ban_threshold = self.get_cvar("qlx_leaverBanThreshold", float)
+
+        i = 0
+        player.tell("^2Leaver-banned players:\n")
+        for steamids in playerlist:
+            steamids = tmp2.split(",")
+            left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
+            completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
+            if not completed:
+                completed = 0
+            else:
+                completed = int(completed)
+            total = completed + left
+            if total < min_games_completed:
+                ratio = (completed + (min_games_completed - total)) / min_games_completed
+            else:
+                ratio = completed / total
+            if ratio <= ban_threshold and total >= min_games_completed:
+                id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
+                player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
+            i += 1
