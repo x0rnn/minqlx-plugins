@@ -132,18 +132,19 @@ class checkplayers(minqlx.Plugin):
             steamids = tmp2.split(",")
             left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
             completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
-            if not completed:
-                completed = 0
-            else:
-                completed = int(completed)
-            total = completed + left
-            if total < min_games_completed:
-                ratio = (completed + (min_games_completed - total)) / min_games_completed
-            else:
-                ratio = completed / total
-            if ratio <= ban_threshold and total >= min_games_completed:
-                id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
-                player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
+            if left:
+                if not completed:
+                    completed = 0
+                else:
+                    completed = int(completed)
+                total = completed + left
+                if total < min_games_completed:
+                    ratio = (completed + (min_games_completed - total)) / min_games_completed
+                else:
+                    ratio = completed / total
+                if ratio <= ban_threshold and total >= min_games_completed:
+                    id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
+                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
             i += 1
 
     def cmd_leaverwarned(self, player, msg, channel):
@@ -170,16 +171,17 @@ class checkplayers(minqlx.Plugin):
             steamids = tmp2.split(",")
             left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
             completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
-            if not completed:
-                completed = 0
-            else:
-                completed = int(completed)
-            total = completed + left
-            if total < min_games_completed:
-                ratio = (completed + (min_games_completed - total)) / min_games_completed
-            else:
-                ratio = completed / total
-            if ratio <= warn_threshold and (ratio > ban_threshold or total < min_games_completed):
-                id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
-                player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
+            if left:
+                if not completed:
+                    completed = 0
+                else:
+                    completed = int(completed)
+                total = completed + left
+                if total < min_games_completed:
+                    ratio = (completed + (min_games_completed - total)) / min_games_completed
+                else:
+                    ratio = completed / total
+                if ratio <= warn_threshold and (ratio > ban_threshold or total < min_games_completed):
+                    id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
+                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
             i += 1
