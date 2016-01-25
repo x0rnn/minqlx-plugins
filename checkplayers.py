@@ -135,11 +135,8 @@ class checkplayers(minqlx.Plugin):
                 try:
                     completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
                 except KeyError:
-                    return None
-                if not completed:
                     completed = 0
-                else:
-                    completed = int(completed)
+                completed = int(completed)
                 total = completed + left
                 if total < min_games_completed:
                     ratio = (completed + (min_games_completed - total)) / min_games_completed
@@ -177,11 +174,8 @@ class checkplayers(minqlx.Plugin):
                 try:
                     completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
                 except KeyError:
-                    return None
-                if not completed:
                     completed = 0
-                else:
-                    completed = int(completed)
+                completed = int(completed)
                 total = completed + left
                 if total < min_games_completed:
                     ratio = (completed + (min_games_completed - total)) / min_games_completed
