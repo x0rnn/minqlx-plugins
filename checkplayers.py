@@ -132,7 +132,10 @@ class checkplayers(minqlx.Plugin):
             steamids = tmp2.split(",")
             left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
             if left:
-                completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
+                try:
+                    completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
+                except KeyError:
+                    return None
                 if not completed:
                     completed = 0
                 else:
@@ -171,7 +174,10 @@ class checkplayers(minqlx.Plugin):
             steamids = tmp2.split(",")
             left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
             if left:
-                completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
+                try:
+                    completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
+                except KeyError:
+                    return None
                 if not completed:
                     completed = 0
                 else:
