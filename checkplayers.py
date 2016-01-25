@@ -1,4 +1,4 @@
-# checkplayers.py, a plugin to list all players with permission >= 1, banned, leaver-banned, leaver-warned and silenced players
+# checkplayers.py, a plugin to list all players with permission >= 1, banned, leaver-banned and silenced players
 # !permissions
 # !banned
 # !leaverbanned
@@ -144,7 +144,7 @@ class checkplayers(minqlx.Plugin):
                     ratio = completed / total
                 if ratio <= ban_threshold and total >= min_games_completed:
                     id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
-                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
+                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{} ^7({}%).".format(id_name, steamids[i], left, completed, round(ratio * 100)))
             i += 1
 
     def cmd_leaverwarned(self, player, msg, channel):
@@ -183,5 +183,5 @@ class checkplayers(minqlx.Plugin):
                     ratio = completed / total
                 if ratio <= warn_threshold and (ratio > ban_threshold or total < min_games_completed):
                     id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
-                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{}^7.".format(id_name, steamids[i], left, completed))
+                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{} ^7({}%).".format(id_name, steamids[i], left, completed, round(ratio * 100)))
             i += 1
