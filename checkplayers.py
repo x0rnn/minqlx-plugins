@@ -1,4 +1,4 @@
-# checkplayers.py, a plugin to list all players with permission >= 1, banned, leaver-banned, leaver-warned and silenced players
+# checkplayers.py by x0rnn, a plugin to list all players with permission >= 1, banned, leaver-banned, leaver-warned and silenced players
 # !permissions
 # !banned
 # !leaverbanned
