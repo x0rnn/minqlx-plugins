@@ -1,4 +1,4 @@
-# checkplayers.py, a plugin to list all players with permission >= 1, banned, leaver-banned and silenced players
+# checkplayers.py, a plugin to list all players with permission >= 1, banned, leaver-banned, leaver-warned and silenced players
 # !permissions
 # !banned
 # !leaverbanned
@@ -131,8 +131,8 @@ class checkplayers(minqlx.Plugin):
         for steamids in playerlist:
             steamids = tmp2.split(",")
             left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
-            completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
             if left:
+                completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
                 if not completed:
                     completed = 0
                 else:
@@ -170,8 +170,8 @@ class checkplayers(minqlx.Plugin):
         for steamids in playerlist:
             steamids = tmp2.split(",")
             left = int(self.db[PLAYER_KEY.format(steamids[i]) + ":games_left"])
-            completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
             if left:
+                completed = self.db[PLAYER_KEY.format(steamids[i]) + ":games_completed"]
                 if not completed:
                     completed = 0
                 else:
