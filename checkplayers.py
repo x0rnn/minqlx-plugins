@@ -183,5 +183,5 @@ class checkplayers(minqlx.Plugin):
                     ratio = completed / total
                 if ratio <= warn_threshold and (ratio > ban_threshold or total < min_games_completed):
                     id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
-                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{} ^7({}%).".format(id_name, steamids[i], left, completed, round((completed / total) * 100)))
+                    player.tell("{} ^7({}) - ^2Left^7: ^6{}^7, ^2completed^7: ^6{} ^7({} percent).".format(id_name, steamids[i], left, completed, round((completed / total) * 100)))
             i += 1
