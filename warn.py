@@ -1,4 +1,5 @@
 # warn.py by x0rnn, a plugin to warn players for misbehaving. A warning is removed after X days, unless the player has been warned X times, then he is perma-banned.
+# When a warned player joins a server, everyone is notified about him and the reason he was warned.
 # todo: !unwarn, !listwarned
 
 import minqlx
