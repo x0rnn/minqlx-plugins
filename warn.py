@@ -20,7 +20,7 @@ class warn(minqlx.Plugin):
         self.add_command("unwarn", self.cmd_unwarn, 5, usage="<id> <warnings to remove>")
         self.add_command("warned", self.cmd_warned, 4)
 
-        self.set_cvar_once("qlx_warnDays", "7") #how many days until the warning goes away
+        self.set_cvar_once("qlx_warnDays", "7") #how many days until the warning goes away (each additional warn adds this many days to the previous expiration date)
         self.set_cvar_once("qlx_maxStrikes", "3") #how many strikes before getting banned
 
     def handle_player_connect(self, player):
