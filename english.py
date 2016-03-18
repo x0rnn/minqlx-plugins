@@ -1,4 +1,5 @@
 # english.py - English motherfucker, do you speak it?
+# Use with: https://steamcommunity.com/sharedfiles/filedetails/?id=647835676
 import minqlx
 
 class english(minqlx.Plugin):
