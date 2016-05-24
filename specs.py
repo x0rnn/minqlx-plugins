@@ -1,4 +1,4 @@
-#list players spectating you
+#specs.py by x0rnn to list players spectating you
 import minqlx
 
 class specs(minqlx.Plugin):
