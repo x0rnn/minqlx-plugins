@@ -4,6 +4,7 @@
 # !leaverbanned
 # !leaverwarned
 # !silenced
+# use kanzo's checkplayers.py instead: https://github.com/QLRace/minqlx-plugins/blob/master/checkplayers.py
 
 import minqlx
 import time
