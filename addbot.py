@@ -29,6 +29,9 @@ class addbot(minqlx.Plugin):
     def handle_player_disconnect(self, player, reason):
         if player == self.current_bot:
             self.current_bot = None
+        if len(self.players()) <= 2 and self.current_bot:
+            minqlx.console_command("kick xaero")
+            self.current_bot = None
 
     def player_loaded(self, player):
         if self.current_bot:
