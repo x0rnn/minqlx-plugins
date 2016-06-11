@@ -8,7 +8,7 @@
 # 	25 kills in a row: godlike
 # 	30 kills in a row: wicked sick
 #
-# !spree_record will print the current map's killing spree rocord and the player's name
+# !spree_record will print the current map's killing spree record and the player's name
 # !clear_spree_record will clear the current map record (admins only)
 #
 # Selfkilling, switching teams, getting teamkilled or getting killed by the world (lava, falling, etc.)
