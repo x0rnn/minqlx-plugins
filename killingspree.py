@@ -8,6 +8,13 @@
 # 	25 kills in a row: godlike
 # 	30 kills in a row: wicked sick
 #
+# 	3 kills in 4 second intervals: multikill
+# 	4 kills in 4 second intervals: mega kill
+# 	5 kills in 4 second intervals: ultra kill
+# 	6 kills in 4 second intervals: monster kill
+# 	7 kills in 4 second intervals: ludicrous kill
+# 	8 kills in 4 second intervals: holy shit
+#
 # !spree_record will print the current map's killing spree record and the player's name
 # !clear_spree_record will clear the current map record (admins only)
 #
@@ -19,6 +26,7 @@
 
 import minqlx
 import time
+from collections import defaultdict
 
 SPREE_KEY = "minqlx:spree:{}"
 PLAYER_KEY = "minqlx:players:{}"
@@ -29,12 +37,18 @@ class killingspree(minqlx.Plugin):
         self.add_hook("game_end", self.handle_game_end)
         self.add_hook("round_end", self.handle_round_end)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
+        self.add_hook("player_loaded", self.player_loaded)
         self.add_hook("map", self.handle_map)
         self.add_command("spree_record", self.cmd_spree_record)
         self.add_command("clear_spree_record", self.cmd_clear_spree_record, 5)
 
         self.kspree = {}
         self.record = 0
+        self.multikill = defaultdict(dict)
+
+    def player_loaded(self, player):
+        self.multikill[str(player.steam_id)][0] = 0
+        self.multikill[str(player.steam_id)][1] = 0
 
     def handle_death(self, victim, killer, data):
         if self.game.state != 'in_progress':
@@ -86,14 +100,46 @@ class killingspree(minqlx.Plugin):
                         msg = "{}'s killing spree ended (^1{} ^7kills), killed by {}.".format(v_name, self.kspree[id], k_name)
                         self.msg(msg)
 
+            def checkMultiKill(id, k_name):
+                 current_time = time.time()
+                 if current_time - self.multikill[id][0] < 4:
+                     self.multikill[id][1] = self.multikill[id][1] + 1
+                     if self.multikill[id][1] == 3:
+                         self.play_sound("sound/misc/multikill.wav")
+                         self.msg("!!! ^1Multi kill ^7> " + k_name + " < ^1Multi kill ^7!!!")
+                     elif self.multikill[id][1] == 4:
+                         self.play_sound("sound/misc/megakill.wav")
+                         self.msg("!!! ^1Mega kill ^7> " + k_name + " < ^1Mega kill ^7!!!")
+                     elif self.multikill[id][1] == 5:
+                         self.play_sound("sound/misc/ultrakill.wav")
+                         self.msg("!!! ^1ULTRA KILL ^7> " + k_name + " < ^1ULTRA KILL ^7!!!")
+                     elif self.multikill[id][1] == 6:
+                         self.play_sound("sound/misc/monsterkill.wav")
+                         self.msg("!!! ^1MONSTER KILL ^7> " + k_name + " < ^1MONSTER KILL^7!!!")
+                     elif self.multikill[id][1] == 7:
+                         self.play_sound("sound/misc/ludicrouskill.wav")
+                         self.msg("!!! ^1LUDICROUS KILL ^7> " + k_name + " < ^1LUDICROUS KILL ^7!!!")
+                     elif self.multikill[id][1] == 8:
+                         self.play_sound("sound/misc/holyshit.wav")
+                         self.msg("!!! ^1 H O L Y  S H I T ^7> " + k_name + " < ^1H O L Y  S H I T ^7!!!")
+                 else:
+                     self.multikill[id][1] = 1
+                 self.multikill[id][0] = time.time()
+
             v_id = data['VICTIM']['STEAM_ID']
 
             if data['TEAMKILL']:
                 self.kspree[v_id] = 0
+                self.multikill[v_id][0] = 0
+                self.multikill[v_id][1] = 0
             if data['MOD'] == "SUICIDE": #team switch & /kill
                 self.kspree[v_id] = 0
+                self.multikill[v_id][0] = 0
+                self.multikill[v_id][1] = 0
             if data['KILLER'] is None: #world
                 self.kspree[v_id] = 0
+                self.multikill[v_id][0] = 0
+                self.multikill[v_id][1] = 0
 
             elif data['KILLER'] is not None and not data['TEAMKILL']:
                 k_id = data['KILLER']['STEAM_ID']
@@ -109,6 +155,9 @@ class killingspree(minqlx.Plugin):
                     checkKSpree(k_id, k_name)
                     checkKSpreeEnd(v_id, v_name, k_name)
                     self.kspree[v_id] = 0
+                checkMultiKill(k_id, k_name)
+                self.multikill[v_id][0] = 0
+                self.multikill[v_id][1] = 0
 
     def handle_game_end(self, data):
         map_name = self.game.map.lower()
