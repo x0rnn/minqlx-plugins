@@ -252,8 +252,8 @@ class killingspree(minqlx.Plugin):
             mega = int(multikills[1][0]) - int(multikills[2][0])
             ultra = int(multikills[2][0]) - int(multikills[3][0])
             monster = int(multikills[3][0]) - int(multikills[4][0])
-            wicked = int(multikills[4][0]) - int(multikills[5][0])
+            ludicrous = int(multikills[4][0]) - int(multikills[5][0])
             self.msg(player.name + " has made: " + str(multi) + " multi, " + str(mega) + " mega, " + str(ultra) + " ultra, "
-                     + str(monster) + " monster, " + str(wicked) + " wicked-sick, " + multikills[5][0] + " holy shit kills.")
+                     + str(monster) + " monster, " + str(ludicrous) + " ludicrous, " + multikills[5][0] + " holy shit kills.")
         else:
             self.msg(player.name + " has made no multikills yet.")
