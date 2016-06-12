@@ -8,12 +8,12 @@
 # 	25 kills in a row: godlike
 # 	30 kills in a row: wicked sick
 #
-# 	3 kills in 4 second intervals: multikill
-# 	4 kills in 4 second intervals: mega kill
-# 	5 kills in 4 second intervals: ultra kill
-# 	6 kills in 4 second intervals: monster kill
-# 	7 kills in 4 second intervals: ludicrous kill
-# 	8 kills in 4 second intervals: holy shit
+# 	3 kills in 3 second intervals: multikill
+# 	4 kills in 3 second intervals: mega kill
+# 	5 kills in 3 second intervals: ultra kill
+# 	6 kills in 3 second intervals: monster kill
+# 	7 kills in 3 second intervals: ludicrous kill
+# 	8 kills in 3 second intervals: holy shit
 #
 # !spree_record will print the current map's killing spree record and the player's name
 # !multikills will print your multikill stats (multikills, megakills, ultrakills, etc.)
@@ -104,7 +104,7 @@ class killingspree(minqlx.Plugin):
 
             def checkMultiKill(id, k_name):
                  current_time = time.time()
-                 if current_time - self.multikill[id][0] < 4:
+                 if current_time - self.multikill[id][0] < 3:
                      self.multikill[id][1] = self.multikill[id][1] + 1
                      if self.multikill[id][1] == 3:
                          if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
