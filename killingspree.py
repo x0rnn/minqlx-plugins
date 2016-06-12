@@ -37,7 +37,7 @@ class killingspree(minqlx.Plugin):
         self.add_hook("game_end", self.handle_game_end)
         self.add_hook("round_end", self.handle_round_end)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
-        self.add_hook("player_loaded", self.player_loaded)
+        self.add_hook("player_spawn", self.handle_player_spawn)
         self.add_hook("map", self.handle_map)
         self.add_command("spree_record", self.cmd_spree_record)
         self.add_command("multikills", self.cmd_multikills)
@@ -50,6 +50,9 @@ class killingspree(minqlx.Plugin):
     def player_loaded(self, player):
         self.multikill[str(player.steam_id)][0] = 0
         self.multikill[str(player.steam_id)][1] = 0
+
+    def handle_player_spawn(self, player):
+        self.kspree[player.steam_id] = 0
 
     def handle_death(self, victim, killer, data):
         if self.game.state != 'in_progress':
@@ -124,21 +127,25 @@ class killingspree(minqlx.Plugin):
             def checkMultiKill(id, k_name):
                  current_time = time.time()
                  multikill_threshold_time = current_time - self.multikill[id][0]
-                 if multikill_threshold_time < 3:
+                 if multikill_threshold_time < 4:
                      self.multikill[id][1] = self.multikill[id][1] + 1
-                     if self.multikill[id][1] == 3:
+                     if multikill_threshold_time < 3:
+                         if self.multikill[id][1] == 3:
+                             if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
+                                 self.db.lpush(PLAYER_KEY.format(id) + ":multikills", 0, 0, 0, 0, 0, 0)
+                                 mk = 0
+                             else:
+                                 mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 0))
+                             mk = mk + 1
+                             self.play_sound("sound/misc/multikill.wav")
+                             self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in 3s)".format(k_name, self.multikill[id][1]))
+                             self.db.lset(PLAYER_KEY.format(id) + ":multikills", 0, mk)
+                     if self.multikill[id][1] == 4:
                          if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
                              self.db.lpush(PLAYER_KEY.format(id) + ":multikills", 0, 0, 0, 0, 0, 0)
                              mk = 0
                          else:
-                             mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 0))
-                         mk = mk + 1
-                         self.play_sound("sound/misc/multikill.wav")
-                         self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in 3s)".format(k_name, self.multikill[id][1]))
-                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 0, mk)
-                 elif multikill_threshold_time < 4:
-                     if self.multikill[id][1] == 4:
-                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 1))
+                             mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 1))
                          mk = mk + 1
                          self.play_sound("sound/misc/megakill.ogg")
                          self.msg("!!! ^1Mega kill ^7> {} < ^1Mega kill ^7!!! ({} kills in 4s)".format(k_name, self.multikill[id][1]))
@@ -182,15 +189,10 @@ class killingspree(minqlx.Plugin):
             elif data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
                 k_id = data['KILLER']['STEAM_ID']
                 k_name = data['KILLER']['NAME']
-                if k_id not in self.kspree:
-                    self.kspree[k_id] = 1
-                    checkKSpreeEnd(v_id, v_name, k_name, True)
-                    self.kspree[v_id] = 0
-                else:
-                    self.kspree[k_id] = self.kspree[k_id] + 1
-                    checkKSpree(k_id, k_name)
-                    checkKSpreeEnd(v_id, v_name, k_name, True)
-                    self.kspree[v_id] = 0
+                self.kspree[k_id] = self.kspree[k_id] + 1
+                checkKSpree(k_id, k_name)
+                checkKSpreeEnd(v_id, v_name, k_name, True)
+                self.kspree[v_id] = 0
                 checkMultiKill(k_id, k_name)
                 self.multikill[v_id][0] = 0
                 self.multikill[v_id][1] = 0
