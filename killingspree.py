@@ -119,13 +119,13 @@ class killingspree(minqlx.Plugin):
                      elif self.multikill[id][1] == 4:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 1))
                          mk = mk + 1
-                         self.play_sound("sound/misc/megakill.wav")
+                         self.play_sound("sound/misc/megakill.ogg")
                          self.msg("!!! ^1Mega kill ^7> " + k_name + " < ^1Mega kill ^7!!!")
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 1, mk)
                      elif self.multikill[id][1] == 5:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 2))
                          mk = mk + 1
-                         self.play_sound("sound/misc/ultrakill.wav")
+                         self.play_sound("sound/misc/ultrakill.ogg")
                          self.msg("!!! ^1ULTRA KILL ^7> " + k_name + " < ^1ULTRA KILL ^7!!!")
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 2, mk)
                      elif self.multikill[id][1] == 6:
@@ -143,7 +143,7 @@ class killingspree(minqlx.Plugin):
                      elif self.multikill[id][1] == 8:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 5))
                          mk = mk + 1
-                         self.play_sound("sound/misc/holyshit.wav")
+                         self.play_sound("sound/misc/holyshit.ogg")
                          self.msg("!!! ^1 H O L Y  S H I T ^7> " + k_name + " < ^1H O L Y  S H I T ^7!!!")
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 5, mk)
                  else:
@@ -248,12 +248,7 @@ class killingspree(minqlx.Plugin):
     def cmd_multikills(self, player, msg, channel):
         if self.db.lrange(PLAYER_KEY.format(player.steam_id) + ":multikills", 0, -1):
             multikills = self.db.lrange(PLAYER_KEY.format(player.steam_id) + ":multikills", 0, -1)
-            multi = int(multikills[0][0]) - int(multikills[1][0])
-            mega = int(multikills[1][0]) - int(multikills[2][0])
-            ultra = int(multikills[2][0]) - int(multikills[3][0])
-            monster = int(multikills[3][0]) - int(multikills[4][0])
-            ludicrous = int(multikills[4][0]) - int(multikills[5][0])
-            self.msg(player.name + " has made: " + str(multi) + " multi, " + str(mega) + " mega, " + str(ultra) + " ultra, "
-                     + str(monster) + " monster, " + str(ludicrous) + " ludicrous, " + multikills[5][0] + " holy shit kills.")
+            self.msg(player.name + " has made: " + multikills[0][0] + " multi, " + multikills[1][0] + " mega, " + multikills[2][0] + " ultra, "
+                     + multikills[3][0] + " monster, " + multikills[4][0] + " ludicrous, " + multikills[5][0] + " holy shit kills.")
         else:
             self.msg(player.name + " has made no multikills yet.")
