@@ -156,7 +156,7 @@ class killingspree(minqlx.Plugin):
                 self.kspree[v_id] = 0
                 self.multikill[v_id][0] = 0
                 self.multikill[v_id][1] = 0
-            if data['MOD'] == "SUICIDE": #team switch & /kill
+            if data['SUICIDE']: #team switch & selfkill
                 self.kspree[v_id] = 0
                 self.multikill[v_id][0] = 0
                 self.multikill[v_id][1] = 0
