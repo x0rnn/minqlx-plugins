@@ -16,6 +16,7 @@
 # 	8 kills in 4 second intervals: holy shit
 #
 # !spree_record will print the current map's killing spree record and the player's name
+# !multikills will print your multikill stats (multikills, megakills, ultrakills, etc.)
 # !clear_spree_record will clear the current map record (admins only)
 #
 # Selfkilling, switching teams, getting teamkilled or getting killed by the world (lava, falling, etc.)
@@ -40,6 +41,7 @@ class killingspree(minqlx.Plugin):
         self.add_hook("player_loaded", self.player_loaded)
         self.add_hook("map", self.handle_map)
         self.add_command("spree_record", self.cmd_spree_record)
+        self.add_command("multikills", self.cmd_multikills)
         self.add_command("clear_spree_record", self.cmd_clear_spree_record, 5)
 
         self.kspree = {}
@@ -105,23 +107,45 @@ class killingspree(minqlx.Plugin):
                  if current_time - self.multikill[id][0] < 4:
                      self.multikill[id][1] = self.multikill[id][1] + 1
                      if self.multikill[id][1] == 3:
+                         if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
+                             self.db.lpush(PLAYER_KEY.format(id) + ":multikills", 0, 0, 0, 0, 0, 0)
+                             mk = 0
+                         else:
+                             mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 0))
+                         mk = mk + 1
                          self.play_sound("sound/misc/multikill.wav")
                          self.msg("!!! ^1Multi kill ^7> " + k_name + " < ^1Multi kill ^7!!!")
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 0, mk)
                      elif self.multikill[id][1] == 4:
+                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 1))
+                         mk = mk + 1
                          self.play_sound("sound/misc/megakill.wav")
                          self.msg("!!! ^1Mega kill ^7> " + k_name + " < ^1Mega kill ^7!!!")
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 1, mk)
                      elif self.multikill[id][1] == 5:
+                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 2))
+                         mk = mk + 1
                          self.play_sound("sound/misc/ultrakill.wav")
                          self.msg("!!! ^1ULTRA KILL ^7> " + k_name + " < ^1ULTRA KILL ^7!!!")
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 2, mk)
                      elif self.multikill[id][1] == 6:
+                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 3))
+                         mk = mk + 1
                          self.play_sound("sound/misc/monsterkill.wav")
                          self.msg("!!! ^1MONSTER KILL ^7> " + k_name + " < ^1MONSTER KILL^7!!!")
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 3, mk)
                      elif self.multikill[id][1] == 7:
+                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 4))
+                         mk = mk + 1
                          self.play_sound("sound/misc/ludicrouskill.wav")
                          self.msg("!!! ^1LUDICROUS KILL ^7> " + k_name + " < ^1LUDICROUS KILL ^7!!!")
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 4, mk)
                      elif self.multikill[id][1] == 8:
+                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 5))
+                         mk = mk + 1
                          self.play_sound("sound/misc/holyshit.wav")
                          self.msg("!!! ^1 H O L Y  S H I T ^7> " + k_name + " < ^1H O L Y  S H I T ^7!!!")
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 5, mk)
                  else:
                      self.multikill[id][1] = 1
                  self.multikill[id][0] = time.time()
@@ -220,3 +244,16 @@ class killingspree(minqlx.Plugin):
         del self.db[SPREE_KEY.format(map_name)]
         self.record = 0
         channel.reply("Killing spree record for map '{}' was cleared.".format(map_name))
+
+    def cmd_multikills(self, player, msg, channel):
+        if self.db.lrange(PLAYER_KEY.format(player.steam_id) + ":multikills", 0, -1):
+            multikills = self.db.lrange(PLAYER_KEY.format(player.steam_id) + ":multikills", 0, -1)
+            multi = int(multikills[0][0]) - int(multikills[1][0])
+            mega = int(multikills[1][0]) - int(multikills[2][0])
+            ultra = int(multikills[2][0]) - int(multikills[3][0])
+            monster = int(multikills[3][0]) - int(multikills[4][0])
+            wicked = int(multikills[4][0]) - int(multikills[5][0])
+            self.msg(player.name + " has made: " + str(multi) + " multi, " + str(mega) + " mega, " + str(ultra) + " ultra, "
+                     + str(monster) + " monster, " + str(wicked) + " wicked-sick, " + multikills[5][0] + " holy shit kills.")
+        else:
+            self.msg(player.name + " has made no multikills yet.")
