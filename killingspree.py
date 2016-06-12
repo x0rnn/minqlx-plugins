@@ -9,18 +9,17 @@
 # 	30 kills in a row: wicked sick
 #
 # 	3 kills in 3 second intervals: multikill
-# 	4 kills in 3 second intervals: mega kill
-# 	5 kills in 3 second intervals: ultra kill
-# 	6 kills in 3 second intervals: monster kill
-# 	7 kills in 3 second intervals: ludicrous kill
-# 	8 kills in 3 second intervals: holy shit
+# 	4 kills in 4 second intervals: mega kill
+# 	5 kills in 4 second intervals: ultra kill
+# 	6 kills in 4 second intervals: monster kill
+# 	7 kills in 4 second intervals: ludicrous kill
+# 	8 kills in 4 second intervals: holy shit
 #
 # !spree_record will print the current map's killing spree record and the player's name
 # !multikills will print your multikill stats (multikills, megakills, ultrakills, etc.)
 # !clear_spree_record will clear the current map record (admins only)
 #
-# Selfkilling, switching teams, getting teamkilled or getting killed by the world (lava, falling, etc.)
-# will nullify your killing streak and it won't register as a record either.
+# Selfkilling or switching teams will nullify your killing streak and it won't register as a record either.
 #
 # Use with: https://steamcommunity.com/sharedfiles/filedetails/?id=701783942
 # Add 701783942 to qlx_workshopReferences
@@ -91,20 +90,41 @@ class killingspree(minqlx.Plugin):
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
 
-            def checkKSpreeEnd(id, v_name, k_name):
+            def checkKSpreeEnd(id, v_name, k_name, normal_kill):
                 if id in self.kspree and self.kspree[id] >= 5:
-                    if self.kspree[id] > self.record:
-                        self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
-                        msg = "{}'s killing spree ended (^1{} ^7kills), killed by {}.".format(v_name, self.kspree[id], k_name)
-                        self.msg(msg)
-                        self.msg("This is a new map record!")
+                    if normal_kill:
+                        if self.kspree[id] > self.record:
+                            self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                            msg = "{}'s killing spree ended (^1{} ^7kills), killed by {}.".format(v_name, self.kspree[id], k_name)
+                            self.msg(msg)
+                            self.msg("This is a new map record!")
+                        else:
+                            msg = "{}'s killing spree ended (^1{} ^7kills), killed by {}.".format(v_name, self.kspree[id], k_name)
+                            self.msg(msg)
                     else:
-                        msg = "{}'s killing spree ended (^1{} ^7kills), killed by {}.".format(v_name, self.kspree[id], k_name)
-                        self.msg(msg)
+                        if data['KILLER'] is None:
+                            if self.kspree[id] > self.record:
+                                self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                                msg = "{}'s killing spree ended (^1{} ^7kills), killed by the world.".format(v_name, self.kspree[id])
+                                self.msg(msg)
+                                self.msg("This is a new map record!")
+                            else:
+                                msg = "{}'s killing spree ended (^1{} ^7kills), killed by the world.".format(v_name, self.kspree[id])
+                                self.msg(msg)
+                        else:
+                            if self.kspree[id] > self.record:
+                                self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                                msg = "{}'s killing spree ended (^1{} ^7kills), teamkilled by {}.".format(v_name, self.kspree[id], k_name)
+                                self.msg(msg)
+                                self.msg("This is a new map record!")
+                            else:
+                                msg = "{}'s killing spree ended (^1{} ^7kills), teamkilled by {}.".format(v_name, self.kspree[id], k_name)
+                                self.msg(msg)
 
             def checkMultiKill(id, k_name):
                  current_time = time.time()
-                 if current_time - self.multikill[id][0] < 3:
+                 multikill_threshold_time = current_time - self.multikill[id][0]
+                 if multikill_threshold_time < 3:
                      self.multikill[id][1] = self.multikill[id][1] + 1
                      if self.multikill[id][1] == 3:
                          if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
@@ -114,72 +134,78 @@ class killingspree(minqlx.Plugin):
                              mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 0))
                          mk = mk + 1
                          self.play_sound("sound/misc/multikill.wav")
-                         self.msg("!!! ^1Multi kill ^7> " + k_name + " < ^1Multi kill ^7!!!")
+                         self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in 3s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 0, mk)
-                     elif self.multikill[id][1] == 4:
+                 elif multikill_threshold_time < 4:
+                     if self.multikill[id][1] == 4:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 1))
                          mk = mk + 1
                          self.play_sound("sound/misc/megakill.ogg")
-                         self.msg("!!! ^1Mega kill ^7> " + k_name + " < ^1Mega kill ^7!!!")
+                         self.msg("!!! ^1Mega kill ^7> {} < ^1Mega kill ^7!!! ({} kills in 4s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 1, mk)
                      elif self.multikill[id][1] == 5:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 2))
                          mk = mk + 1
                          self.play_sound("sound/misc/ultrakill.ogg")
-                         self.msg("!!! ^1ULTRA KILL ^7> " + k_name + " < ^1ULTRA KILL ^7!!!")
+                         self.msg("!!! ^1ULTRA KILL ^7> {} < ^1ULTRA KILL ^7!!! ({} kills in 4s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 2, mk)
                      elif self.multikill[id][1] == 6:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 3))
                          mk = mk + 1
                          self.play_sound("sound/misc/monsterkill.wav")
-                         self.msg("!!! ^1MONSTER KILL ^7> " + k_name + " < ^1MONSTER KILL^7!!!")
+                         self.msg("!!! ^1MONSTER KILL ^7> {} < ^1MONSTER KILL^7!!! ({} kills in 4s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 3, mk)
                      elif self.multikill[id][1] == 7:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 4))
                          mk = mk + 1
                          self.play_sound("sound/misc/ludicrouskill.wav")
-                         self.msg("!!! ^1LUDICROUS KILL ^7> " + k_name + " < ^1LUDICROUS KILL ^7!!!")
+                         self.msg("!!! ^1LUDICROUS KILL ^7> {} < ^1LUDICROUS KILL ^7!!! ({} kills in 4s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 4, mk)
                      elif self.multikill[id][1] == 8:
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 5))
                          mk = mk + 1
                          self.play_sound("sound/misc/holyshit.ogg")
-                         self.msg("!!! ^1 H O L Y  S H I T ^7> " + k_name + " < ^1H O L Y  S H I T ^7!!!")
+                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in 3s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 5, mk)
                  else:
                      self.multikill[id][1] = 1
                  self.multikill[id][0] = time.time()
 
             v_id = data['VICTIM']['STEAM_ID']
+            v_name = data['VICTIM']['NAME']
 
-            if data['TEAMKILL']:
-                self.kspree[v_id] = 0
-                self.multikill[v_id][0] = 0
-                self.multikill[v_id][1] = 0
             if data['SUICIDE']: #team switch & selfkill
                 self.kspree[v_id] = 0
                 self.multikill[v_id][0] = 0
                 self.multikill[v_id][1] = 0
-            if data['KILLER'] is None: #world
-                self.kspree[v_id] = 0
-                self.multikill[v_id][0] = 0
-                self.multikill[v_id][1] = 0
 
-            elif data['KILLER'] is not None and not data['TEAMKILL']:
+            elif data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
                 k_id = data['KILLER']['STEAM_ID']
                 k_name = data['KILLER']['NAME']
-                v_name = data['VICTIM']['NAME']
-
                 if k_id not in self.kspree:
                     self.kspree[k_id] = 1
-                    checkKSpreeEnd(v_id, v_name, k_name)
+                    checkKSpreeEnd(v_id, v_name, k_name, True)
                     self.kspree[v_id] = 0
                 else:
                     self.kspree[k_id] = self.kspree[k_id] + 1
                     checkKSpree(k_id, k_name)
-                    checkKSpreeEnd(v_id, v_name, k_name)
+                    checkKSpreeEnd(v_id, v_name, k_name, True)
                     self.kspree[v_id] = 0
                 checkMultiKill(k_id, k_name)
+                self.multikill[v_id][0] = 0
+                self.multikill[v_id][1] = 0
+
+            elif data['TEAMKILL']: #teamkill
+                k_name = data['KILLER']['NAME']
+                checkKSpreeEnd(v_id, v_name, k_name, False)
+                self.kspree[v_id] = 0
+                self.multikill[v_id][0] = 0
+                self.multikill[v_id][1] = 0
+
+            elif data['KILLER'] is None: #killed by world
+                k_name = "world"
+                checkKSpreeEnd(v_id, v_name, k_name, False)
+                self.kspree[v_id] = 0
                 self.multikill[v_id][0] = 0
                 self.multikill[v_id][1] = 0
 
