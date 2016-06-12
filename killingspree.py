@@ -165,7 +165,7 @@ class killingspree(minqlx.Plugin):
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 5))
                          mk = mk + 1
                          self.play_sound("sound/misc/holyshit.ogg")
-                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in 3s)".format(k_name, self.multikill[id][1]))
+                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in 4s)".format(k_name, self.multikill[id][1]))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 5, mk)
                  else:
                      self.multikill[id][1] = 1
