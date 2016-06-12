@@ -37,6 +37,7 @@ class killingspree(minqlx.Plugin):
         self.add_hook("game_end", self.handle_game_end)
         self.add_hook("round_end", self.handle_round_end)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
+        self.add_hook("player_loaded", self.player_loaded)
         self.add_hook("player_spawn", self.handle_player_spawn)
         self.add_hook("map", self.handle_map)
         self.add_command("spree_record", self.cmd_spree_record)
