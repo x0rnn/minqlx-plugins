@@ -16,6 +16,7 @@
 # rocketinstagib <on/off>: enable or disable rocket instagib for midair mode
 # instagib <on/off>: enable or disable railgun instagib mode
 # crouchslide <on/off>: enable or disable crouchslide (Q4) mode
+# allready: ready-up all players
 # note that the plugin is tailored for duel gameplay, voting/resetting to VQL/PQL changes starting weapons to gauntlet + MG which can be a problem if you have loadouts enabled or are running a factory where you spawn with other weapons by default
 
 import minqlx
@@ -43,7 +44,8 @@ class vote(minqlx.Plugin):
                     "^5midair <on/off>          ^3- ^7enable or disable rockets-only midair mode\n"
                     "^5rocketinstagib <on/off>  ^3- ^7enable or disable rocket instagib for midair mode\n"
                     "^5instagib <on/off>        ^3- ^7enable or disable railgun instagib mode\n"
-                    "^5crouchslide <on/off>     ^3- ^7enable or disable crouchslide (Q4) mode")
+                    "^5crouchslide <on/off>     ^3- ^7enable or disable crouchslide (Q4) mode\n"
+                    "^5allready                 ^3- ^7ready all players")
         return minqlx.RET_STOP_ALL
 
     def player_loaded(self, player):
@@ -337,4 +339,12 @@ class vote(minqlx.Plugin):
                 return minqlx.RET_STOP_ALL
             else:
                 caller.tell("^2/cv rocketinstagib [on/off]^7 is the usage for this callvote command.")
+                return minqlx.RET_STOP_ALL
+
+        if vote.lower() == "allready":
+            if self.game.state == "warmup":
+                self.callvote("qlx !allready", "Ready all players?")
+                return minqlx.RET_STOP_ALL
+            else:
+                caller.tell("The game is already in progress.")
                 return minqlx.RET_STOP_ALL
