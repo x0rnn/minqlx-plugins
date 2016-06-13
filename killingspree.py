@@ -22,7 +22,7 @@
 # Selfkilling or switching teams will nullify your killing streak and it won't register as a record either.
 #
 # Use with: https://steamcommunity.com/sharedfiles/filedetails/?id=701783942
-# Add 701783942 to qlx_workshopReferences
+# Add 701783942 to qlx_workshopReferences and workshop.txt
 
 import minqlx
 import time
@@ -39,6 +39,7 @@ class killingspree(minqlx.Plugin):
         self.add_hook("player_disconnect", self.handle_player_disconnect)
         self.add_hook("player_loaded", self.player_loaded)
         self.add_hook("player_spawn", self.handle_player_spawn)
+        self.add_hook("round_countdown", self.handle_round_count)
         self.add_hook("map", self.handle_map)
         self.add_command("spree_record", self.cmd_spree_record)
         self.add_command("multikills", self.cmd_multikills)
@@ -54,6 +55,13 @@ class killingspree(minqlx.Plugin):
 
     def handle_player_spawn(self, player):
         self.kspree[str(player.steam_id)] = 0
+
+    def handle_game_countdown(self):
+        self.kspree.clear()
+
+    def handle_player_disconnect(self, player, reason):
+        if str(player.steam_id) in self.kspree:
+            self.kspree[str(player.steam_id)] = 0
 
     def handle_death(self, victim, killer, data):
         if self.game.state != 'in_progress':
@@ -241,10 +249,6 @@ class killingspree(minqlx.Plugin):
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
         self.kspree.clear()
-
-    def handle_player_disconnect(self, player, reason):
-        if str(player.steam_id) in self.kspree:
-            self.kspree[str(player.steam_id)] = 0
 
     def handle_map(self, map_name, factory):
         if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
