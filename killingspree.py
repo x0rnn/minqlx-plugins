@@ -191,35 +191,21 @@ class killingspree(minqlx.Plugin):
             v_id = data['VICTIM']['STEAM_ID']
             v_name = data['VICTIM']['NAME']
 
-            if data['SUICIDE']: #team switch & selfkill
-                self.kspree[v_id] = 0
-                self.multikill[v_id][0] = 0
-                self.multikill[v_id][1] = 0
-
-            elif data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
+            if data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
                 k_id = data['KILLER']['STEAM_ID']
                 k_name = data['KILLER']['NAME']
                 self.kspree[k_id] = self.kspree[k_id] + 1
                 checkKSpree(k_id, k_name)
                 checkKSpreeEnd(v_id, v_name, k_name, True)
-                self.kspree[v_id] = 0
                 checkMultiKill(k_id, k_name)
-                self.multikill[v_id][0] = 0
-                self.multikill[v_id][1] = 0
 
             elif data['TEAMKILL']: #teamkill
                 k_name = data['KILLER']['NAME']
                 checkKSpreeEnd(v_id, v_name, k_name, False)
-                self.kspree[v_id] = 0
-                self.multikill[v_id][0] = 0
-                self.multikill[v_id][1] = 0
 
             elif data['KILLER'] is None: #killed by world
                 k_name = "world"
                 checkKSpreeEnd(v_id, v_name, k_name, False)
-                self.kspree[v_id] = 0
-                self.multikill[v_id][0] = 0
-                self.multikill[v_id][1] = 0
 
     def handle_game_end(self, data):
         map_name = self.game.map.lower()
@@ -263,7 +249,8 @@ class killingspree(minqlx.Plugin):
             spree = self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)
             spree_record = int(spree[0][1])
             steam_id = spree[0][0].split(",")
-            name = self.db.lindex(PLAYER_KEY.format(steam_id[0]), 0)
+            self.msg(steam_id[0])
+            name = self.db.lindex("minqlx:players:{}".format(steam_id[0]), 0)
             if not name:
                 msg = "Killing spree record for map '{}': ^1{} ^7kills by BOT.".format(map_name, spree_record)
                 self.msg(msg)
