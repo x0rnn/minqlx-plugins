@@ -29,7 +29,7 @@ import time
 from collections import defaultdict
 
 SPREE_KEY = "minqlx:spree:{}"
-PLAYER_KEY = "minqlx:players:{}"
+PLAYER_KEY = "minqlx:spree:players:{}"
 
 class killingspree(minqlx.Plugin):
     def __init__(self):
@@ -37,10 +37,9 @@ class killingspree(minqlx.Plugin):
         self.add_hook("game_end", self.handle_game_end)
         self.add_hook("round_end", self.handle_round_end)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
-        self.add_hook("player_loaded", self.player_loaded)
         self.add_hook("player_spawn", self.handle_player_spawn)
         self.add_hook("game_countdown", self.handle_game_countdown)
-        self.add_hook("round_countdown", self.handle_round_count)
+        self.add_hook("round_countdown", self.handle_round_countdown)
         self.add_hook("map", self.handle_map)
         self.add_command("spree_record", self.cmd_spree_record)
         self.add_command("multikills", self.cmd_multikills)
@@ -50,17 +49,15 @@ class killingspree(minqlx.Plugin):
         self.record = 0
         self.multikill = defaultdict(dict)
 
-    def player_loaded(self, player):
-        self.multikill[str(player.steam_id)][0] = 0
-        self.multikill[str(player.steam_id)][1] = 0
-
     def handle_player_spawn(self, player):
         self.kspree[str(player.steam_id)] = 0
+        self.multikill[str(player.steam_id)][0] = 0
+        self.multikill[str(player.steam_id)][1] = 0
 
     def handle_game_countdown(self):
         self.kspree.clear()
 
-    def handle_round_count(self):
+    def handle_round_countdown(self):
         self.kspree.clear()
 
     def handle_player_disconnect(self, player, reason):
@@ -256,7 +253,7 @@ class killingspree(minqlx.Plugin):
 
     def handle_map(self, map_name, factory):
         if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
-            self.record = self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)[0][1]
+            self.record = int(self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)[0][1])
         else:
             self.record = 0
 
