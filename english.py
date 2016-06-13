@@ -1,7 +1,7 @@
 # english.py - English motherfucker, do you speak it?
 # also added "Denied!" from Q3
 # Use with: https://steamcommunity.com/sharedfiles/filedetails/?id=647835676
-# Add 647835676 to qlx_workshopReferences
+# Add 647835676 to qlx_workshopReferences and workshop.txt
 import minqlx
 
 class english(minqlx.Plugin):
