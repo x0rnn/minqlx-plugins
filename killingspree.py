@@ -60,7 +60,7 @@ class killingspree(minqlx.Plugin):
     def handle_game_countdown(self):
         self.kspree.clear()
 
-    def handle_round_count(self, round_number):
+    def handle_round_count(self):
         self.kspree.clear()
 
     def handle_player_disconnect(self, player, reason):
