@@ -249,7 +249,6 @@ class killingspree(minqlx.Plugin):
             spree = self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)
             spree_record = int(spree[0][1])
             steam_id = spree[0][0].split(",")
-            self.msg(steam_id[0])
             name = self.db.lindex("minqlx:players:{}".format(steam_id[0]), 0)
             if not name:
                 msg = "Killing spree record for map '{}': ^1{} ^7kills by BOT.".format(map_name, spree_record)
