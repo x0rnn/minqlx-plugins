@@ -196,16 +196,15 @@ class killingspree(minqlx.Plugin):
                 k_name = data['KILLER']['NAME']
                 self.kspree[k_id] = self.kspree[k_id] + 1
                 checkKSpree(k_id, k_name)
-                checkKSpreeEnd(v_id, v_name, k_name, True)
                 checkMultiKill(k_id, k_name)
+                checkKSpreeEnd(v_id, v_name, k_name, True)
 
             elif data['TEAMKILL']: #teamkill
                 k_name = data['KILLER']['NAME']
                 checkKSpreeEnd(v_id, v_name, k_name, False)
 
             elif data['KILLER'] is None: #killed by world
-                k_name = "world"
-                checkKSpreeEnd(v_id, v_name, k_name, False)
+                checkKSpreeEnd(v_id, v_name, "world", False)
 
     def handle_game_end(self, data):
         map_name = self.game.map.lower()
