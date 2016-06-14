@@ -15,10 +15,7 @@ class specs(minqlx.Plugin):
             return minqlx.RET_STOP_EVENT
 
         else:
-            for pl in self.players():
-                if pl.team == "spectator":
-                    if pl.state.position == player.state.position:
-                        player.tell(pl.name)
+            player.tell(", ".join([p.name for p in self.teams()["spectator"] if p.state.position == player.state.position]))
             return minqlx.RET_STOP_EVENT
 
     def cmd_specwho(self, player, msg, channel):
