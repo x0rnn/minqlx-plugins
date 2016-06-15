@@ -25,11 +25,26 @@
 # Add 701783942 to qlx_workshopReferences and workshop.txt
 
 import minqlx
+import minqlx.database
 import time
+from threading import Timer
 from collections import defaultdict
 
 SPREE_KEY = "minqlx:spree:{}"
 PLAYER_KEY = "minqlx:spree:players:{}"
+
+class timer:
+      def startTimer(self, n, func):
+        self.stopTimer()
+        self.t = Timer(n, func)
+        self.t.start()
+
+      def stopTimer(self):
+        try:
+            if self.t.is_alive():
+                self.t.cancel()
+        except:
+            pass
 
 class killingspree(minqlx.Plugin):
     def __init__(self):
@@ -52,8 +67,9 @@ class killingspree(minqlx.Plugin):
 
     def handle_player_spawn(self, player):
         self.kspree[str(player.steam_id)] = 0
-        self.multikill[str(player.steam_id)][0] = 0
-        self.multikill[str(player.steam_id)][1] = 0
+        self.multikill[str(player.steam_id)]["time"] = 0
+        self.multikill[str(player.steam_id)]["frag_num"] = 0
+        self.multikill[str(player.steam_id)]["timer"] = timer()
         try:
             del self.mtime[str(player.steam_id)]
         except KeyError:
@@ -73,6 +89,42 @@ class killingspree(minqlx.Plugin):
             del self.mtime[str(player.steam_id)]
         except KeyError:
             return
+
+    def handle_game_end(self, data):
+        map_name = self.game.map.lower()
+        for pl in self.players():
+            if pl.team != "spectator":
+                if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
+                    if self.kspree[str(pl.steam_id)] > self.record:
+                        self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
+                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
+                        self.msg(msg)
+                        self.msg("This is a new map record!")
+                    else:
+                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
+                        self.msg(msg)
+        self.kspree.clear()
+
+    def handle_round_end(self, data):
+        map_name = self.game.map.lower()
+        for pl in self.players():
+            if pl.team != "spectator":
+                if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
+                    if self.kspree[str(pl.steam_id)] > self.record:
+                        self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
+                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
+                        self.msg(msg)
+                        self.msg("This is a new map record!")
+                    else:
+                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
+                        self.msg(msg)
+        self.kspree.clear()
+
+    def handle_map(self, map_name, factory):
+        if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
+            self.record = int(self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)[0][1])
+        else:
+            self.record = 0
 
     def handle_death(self, victim, killer, data):
         if self.game.state != 'in_progress':
@@ -144,68 +196,74 @@ class killingspree(minqlx.Plugin):
                                 msg = "{}'s killing spree ended (^1{} ^7kills), teamkilled by {}.".format(v_name, self.kspree[id], k_name)
                                 self.msg(msg)
 
+            def delay_announce(id):
+                def playit():
+                    k_name = data['KILLER']['NAME']
+                    frags = self.multikill[id]["frag_num"]
+                    if frags == 3:
+                        self.play_sound("sound/misc/multikill.wav")
+                        self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][2] - self.mtime[id][0])))
+                    elif frags == 4:
+                        self.play_sound("sound/misc/megakill.ogg")
+                        self.msg("!!! ^1Mega kill ^7> {} < ^1Mega kill ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][3] - self.mtime[id][0])))
+                    elif frags == 5:
+                        self.play_sound("sound/misc/ultrakill.ogg")
+                        self.msg("!!! ^1ULTRA KILL ^7> {} < ^1ULTRA KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][4] - self.mtime[id][0])))
+                    elif frags == 6:
+                       self.play_sound("sound/misc/monsterkill.wav")
+                       self.msg("!!! ^1MONSTER KILL ^7> {} < ^1MONSTER KILL^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][5] - self.mtime[id][0])))
+                    elif frags == 7:
+                        self.play_sound("sound/misc/ludicrouskill.wav")
+                        self.msg("!!! ^1LUDICROUS KILL ^7> {} < ^1LUDICROUS KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][6] - self.mtime[id][0])))
+                    elif frags >= 8:
+                        self.play_sound("sound/misc/holyshit.ogg")
+                        self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][7] - self.mtime[id][0])))
+                return playit
+
             def checkMultiKill(id, k_name):
+                 t = self.multikill[id]["timer"]
                  current_time = time.time()
-                 multikill_threshold_time = current_time - self.multikill[id][0]
+                 multikill_threshold_time = current_time - self.multikill[id]["time"]
                  if multikill_threshold_time < 4:
-                     self.multikill[id][1] = self.multikill[id][1] + 1
-                     self.mtime[id].update({self.multikill[id][1] - 1:time.time()})
+                     t.stopTimer()
+                     self.multikill[id]["frag_num"] = self.multikill[id]["frag_num"] + 1
+                     self.mtime[id].update({self.multikill[id]["frag_num"] - 1:time.time()})
                      if multikill_threshold_time < 3:
-                         if self.multikill[id][1] == 3:
+                         if self.multikill[id]["frag_num"] == 3:
+                             t.startTimer(4.1, delay_announce(id))
                              if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
                                  self.db.lpush(PLAYER_KEY.format(id) + ":multikills", 0, 0, 0, 0, 0, 0)
                                  mk = 0
                              else:
                                  mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 0))
                              mk = mk + 1
-                             self.play_sound("sound/misc/multikill.wav")
-                             self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in {}s)".format(k_name, self.multikill[id][1], round(self.mtime[id][2] - self.mtime[id][0])))
                              self.db.lset(PLAYER_KEY.format(id) + ":multikills", 0, mk)
-                     if self.multikill[id][1] == 4:
+                     if 4 <= self.multikill[id]["frag_num"] <= 8:
+                         t.startTimer(4.1, delay_announce(id))
                          if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
                              self.db.lpush(PLAYER_KEY.format(id) + ":multikills", 0, 0, 0, 0, 0, 0)
                              mk = 0
                          else:
-                             mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 1))
+                             mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", self.multikill[id]["frag_num"] - 3))
                          mk = mk + 1
-                         self.play_sound("sound/misc/megakill.ogg")
-                         self.msg("!!! ^1Mega kill ^7> {} < ^1Mega kill ^7!!! ({} kills in {}s)".format(k_name, self.multikill[id][1], round(self.mtime[id][3] - self.mtime[id][0])))
-                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 1, mk)
-                     elif self.multikill[id][1] == 5:
-                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 2))
-                         mk = mk + 1
-                         self.play_sound("sound/misc/ultrakill.ogg")
-                         self.msg("!!! ^1ULTRA KILL ^7> {} < ^1ULTRA KILL ^7!!! ({} kills in {}s)".format(k_name, self.multikill[id][1], round(self.mtime[id][4] - self.mtime[id][0])))
-                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 2, mk)
-                     elif self.multikill[id][1] == 6:
-                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 3))
-                         mk = mk + 1
-                         self.play_sound("sound/misc/monsterkill.wav")
-                         self.msg("!!! ^1MONSTER KILL ^7> {} < ^1MONSTER KILL^7!!! ({} kills in {}s)".format(k_name, self.multikill[id][1], round(self.mtime[id][5] - self.mtime[id][0])))
-                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 3, mk)
-                     elif self.multikill[id][1] == 7:
-                         mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 4))
-                         mk = mk + 1
-                         self.play_sound("sound/misc/ludicrouskill.wav")
-                         self.msg("!!! ^1LUDICROUS KILL ^7> {} < ^1LUDICROUS KILL ^7!!! ({} kills in {}s)".format(k_name, self.multikill[id][1], round(self.mtime[id][6] - self.mtime[id][0])))
-                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", 4, mk)
-                     elif self.multikill[id][1] == 8:
+                         self.db.lset(PLAYER_KEY.format(id) + ":multikills", self.multikill[id]["frag_num"] - 3, mk)
+                     elif self.multikill[id]["frag_num"] > 8:
+                         t.startTimer(4.1, delay_announce(id))
                          mk = int(self.db.lindex(PLAYER_KEY.format(id) + ":multikills", 5))
                          mk = mk + 1
-                         self.play_sound("sound/misc/holyshit.ogg")
-                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in {}s)".format(k_name, self.multikill[id][1], round(self.mtime[id][7] - self.mtime[id][0])))
                          self.db.lset(PLAYER_KEY.format(id) + ":multikills", 5, mk)
                  else:
-                     self.multikill[id][1] = 1
+                     self.multikill[id]["frag_num"] = 1
                      try:
                          del self.mtime[id]
                      except KeyError:
                          pass
                      self.mtime[id][0] = time.time()
-                 self.multikill[id][0] = time.time()
+                 self.multikill[id]["time"] = time.time()
 
             v_id = data['VICTIM']['STEAM_ID']
             v_name = data['VICTIM']['NAME']
+            t = timer()
 
             if data['SUICIDE']: #team switch & selfkill
                 self.kspree[v_id] = 0
@@ -228,42 +286,6 @@ class killingspree(minqlx.Plugin):
 
             elif data['KILLER'] is None: #killed by world
                 checkKSpreeEnd(v_id, v_name, "world", False)
-
-    def handle_game_end(self, data):
-        map_name = self.game.map.lower()
-        for pl in self.players():
-            if pl.team != "spectator":
-                if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
-                    if self.kspree[str(pl.steam_id)] > self.record:
-                        self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
-                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
-                        self.msg(msg)
-                        self.msg("This is a new map record!")
-                    else:
-                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
-                        self.msg(msg)
-        self.kspree.clear()
-
-    def handle_round_end(self, data):
-        map_name = self.game.map.lower()
-        for pl in self.players():
-            if pl.team != "spectator":
-                if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
-                    if self.kspree[str(pl.steam_id)] > self.record:
-                        self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
-                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
-                        self.msg(msg)
-                        self.msg("This is a new map record!")
-                    else:
-                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
-                        self.msg(msg)
-        self.kspree.clear()
-
-    def handle_map(self, map_name, factory):
-        if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
-            self.record = int(self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)[0][1])
-        else:
-            self.record = 0
 
     def cmd_spree_record(self, player, msg, channel):
         map_name = self.game.map.lower()
