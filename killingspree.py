@@ -61,6 +61,7 @@ class killingspree(minqlx.Plugin):
         self.add_command("clear_spree_record", self.cmd_clear_spree_record, 5)
 
         self.kspree = {}
+        self.dspree = {}
         self.record = 0
         self.multikill = defaultdict(dict)
         self.mtime = defaultdict(dict)
@@ -77,13 +78,17 @@ class killingspree(minqlx.Plugin):
 
     def handle_game_countdown(self):
         self.kspree.clear()
+        self.dspree.clear()
 
     def handle_round_countdown(self):
         self.kspree.clear()
+        self.dspree.clear()
 
     def handle_player_disconnect(self, player, reason):
         if str(player.steam_id) in self.kspree:
             self.kspree[str(player.steam_id)] = 0
+        if str(player.steam_id) in self.dspree:
+            self.dspree[str(player.steam_id)] = 0
         try:
             del self.multikill[str(player.steam_id)]
             del self.mtime[str(player.steam_id)]
@@ -104,6 +109,7 @@ class killingspree(minqlx.Plugin):
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
         self.kspree.clear()
+        self.dspree.clear()
 
     def handle_round_end(self, data):
         map_name = self.game.map.lower()
@@ -119,6 +125,7 @@ class killingspree(minqlx.Plugin):
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
         self.kspree.clear()
+        self.dspree.clear()
 
     def handle_map(self, map_name, factory):
         if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
@@ -195,6 +202,16 @@ class killingspree(minqlx.Plugin):
                             else:
                                 msg = "{}'s killing spree ended (^1{} ^7kills), teamkilled by {}.".format(v_name, self.kspree[id], k_name)
                                 self.msg(msg)
+
+            def checkDSpree(id, name):
+                if self.dspree[id] % 5 == 0:
+                    spree_id = self.dspree[id]
+                    if spree_id == 10:
+                        msg = "{} is having a bad day, ^1{} ^7deaths without a kill!".format(name, self.dspree[id])
+                        self.msg(msg)
+                    elif spree_id >= 15:
+                        msg = "{} is really getting his ass kicked, ^1{} ^7deaths without a kill!".format(name, self.dspree[id])
+                        self.msg(msg)
 
             def delay_announce(id):
                 def playit():
@@ -273,6 +290,12 @@ class killingspree(minqlx.Plugin):
 
             if data['SUICIDE']: #team switch & selfkill
                 self.kspree[v_id] = 0
+                if v_id not in self.dspree:
+                    if v_id != "0":
+                        self.dspree[v_id] = 1
+                else:
+                    self.dspree[v_id] = self.dspree[v_id] + 1
+                    checkDSpree(v_id, v_name)
                 return
 
             if data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
@@ -285,6 +308,14 @@ class killingspree(minqlx.Plugin):
                 except:
                     pass
                 checkKSpreeEnd(v_id, v_name, k_name, True)
+                if k_id in self.dspree and self.dspree[k_id] != 0:
+                    self.dspree[k_id] = 0
+                if v_id not in self.dspree:
+                    if v_id != "0":
+                        self.dspree[v_id] = 1
+                else:
+                    self.dspree[v_id] = self.dspree[v_id] + 1
+                    checkDSpree(v_id, v_name)
 
             elif data['TEAMKILL']: #teamkill
                 k_name = data['KILLER']['NAME']
@@ -292,6 +323,12 @@ class killingspree(minqlx.Plugin):
 
             elif data['KILLER'] is None: #killed by world
                 checkKSpreeEnd(v_id, v_name, "world", False)
+                if v_id not in self.dspree:
+                    if v_id != "0":
+                        self.dspree[v_id] = 1
+                else:
+                    self.dspree[v_id] = self.dspree[v_id] + 1
+                    checkDSpree(v_id, v_name)
 
     def cmd_spree_record(self, player, msg, channel):
         map_name = self.game.map.lower()
