@@ -290,12 +290,17 @@ class killingspree(minqlx.Plugin):
 
             if data['SUICIDE']: #team switch & selfkill
                 self.kspree[v_id] = 0
-                if v_id not in self.dspree:
-                    if v_id != "0":
-                        self.dspree[v_id] = 1
+                if data['MOD'] == "SWITCHTEAM":
+                    if v_id in self.dspree:
+                        if self.dspree[v_id] != 0:
+                            self.dspree[v_id] = 0
                 else:
-                    self.dspree[v_id] = self.dspree[v_id] + 1
-                    checkDSpree(v_id, v_name)
+                    if v_id not in self.dspree:
+                        if v_id != "0":
+                            self.dspree[v_id] = 1
+                    else:
+                        self.dspree[v_id] = self.dspree[v_id] + 1
+                        checkDSpree(v_id, v_name)
                 return
 
             if data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
@@ -308,8 +313,9 @@ class killingspree(minqlx.Plugin):
                 except:
                     pass
                 checkKSpreeEnd(v_id, v_name, k_name, True)
-                if k_id in self.dspree and self.dspree[k_id] != 0:
-                    self.dspree[k_id] = 0
+                if k_id in self.dspree:
+                    if self.dspree[k_id] != 0:
+                        self.dspree[k_id] = 0
                 if v_id not in self.dspree:
                     if v_id != "0":
                         self.dspree[v_id] = 1
