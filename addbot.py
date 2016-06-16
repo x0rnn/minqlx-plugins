@@ -56,7 +56,8 @@ class addbot(minqlx.Plugin):
 
     def cmd_addbot(self, player, msg, channel):
         if player.team == "spectator":
-            return
+            player.tell("You can't use this command as a spectator.")
+            return minqlx.RET_STOP_ALL
         elif self.current_bot:
             player.tell("The bot is already active.")
             return minqlx.RET_STOP_ALL
