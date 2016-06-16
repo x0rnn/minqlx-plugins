@@ -52,7 +52,7 @@ class addbot(minqlx.Plugin):
             player.tell("Please select a skill between 0 and 200. 0 is very difficult, 60 is hard, 200 is easier but still not noob-friendly")
             return minqlx.RET_STOP_ALL
         self.set_cvar("bot_thinktime", thinktime)
-        self.msg("^1X^7aero's skill has been set to: ^2" + thinktime)
+        self.msg("^1X^7aero's skill has been set to: ^2" + str(thinktime))
 
     def cmd_addbot(self, player, msg, channel):
         if player.team == "spectator":
