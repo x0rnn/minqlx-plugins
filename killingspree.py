@@ -201,39 +201,27 @@ class killingspree(minqlx.Plugin):
                     k_name = data['KILLER']['NAME']
                     frags = self.multikill[id]["frag_num"]
                     if frags == 3:
-                        for p in self.players():
-                            if p.steam_id == int(id):
-                                p.center_print("^1Multikill!")
+                        self.player(int(id)).center_print("^1Multikill!")
                         self.play_sound("sound/misc/multikill.wav")
                         self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][2] - self.mtime[id][0])))
                     elif frags == 4:
-                        for p in self.players():
-                            if p.steam_id == int(id):
-                                p.center_print("^1Mega kill!")
+                        self.player(int(id)).center_print("^1Mega kill!")
                         self.play_sound("sound/misc/megakill.ogg")
                         self.msg("!!! ^1Mega kill ^7> {} < ^1Mega kill ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][3] - self.mtime[id][0])))
                     elif frags == 5:
-                        for p in self.players():
-                            if p.steam_id == int(id):
-                                p.center_print("^1ULTRA KILL!")
+                        self.player(int(id)).center_print("^1ULTRA KILL!")
                         self.play_sound("sound/misc/ultrakill.ogg")
                         self.msg("!!! ^1ULTRA KILL ^7> {} < ^1ULTRA KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][4] - self.mtime[id][0])))
                     elif frags == 6:
-                        for p in self.players():
-                            if p.steam_id == int(id):
-                                p.center_print("^1MONSTER KILL!")
+                        self.player(int(id)).center_print("^1MONSTER KILL!")
                         self.play_sound("sound/misc/monsterkill.wav")
                         self.msg("!!! ^1MONSTER KILL ^7> {} < ^1MONSTER KILL^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][5] - self.mtime[id][0])))
                     elif frags == 7:
-                        for p in self.players():
-                            if p.steam_id == int(id):
-                                p.center_print("^1LUDICROUS KILL!")
+                        self.player(int(id)).center_print("^1LUDICROUS KILL!")
                         self.play_sound("sound/misc/ludicrouskill.wav")
                         self.msg("!!! ^1LUDICROUS KILL ^7> {} < ^1LUDICROUS KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][6] - self.mtime[id][0])))
                     elif frags >= 8:
-                        for p in self.players():
-                            if p.steam_id == int(id):
-                                p.center_print("^1H O L Y  S H I T!")
+                        self.player(int(id)).center_print("^1H O L Y  S H I T!")
                         self.play_sound("sound/misc/holyshit.ogg")
                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][7] - self.mtime[id][0])))
                 return playit
