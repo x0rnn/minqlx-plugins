@@ -6,8 +6,8 @@ import minqlx
 
 class english(minqlx.Plugin):
     def __init__(self):
-        self.add_command("english", self.cmd_english, 2)
-        self.add_command("denied", self.cmd_denied, 2)
+        self.add_command("english", self.cmd_english, 1)
+        self.add_command("denied", self.cmd_denied, 1)
 
     def cmd_english(self, player, msg, channel):
         self.play_sound("sound/misc/english.wav")
