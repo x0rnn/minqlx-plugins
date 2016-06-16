@@ -239,7 +239,7 @@ class killingspree(minqlx.Plugin):
                         self.msg("!!! ^1LUDICROUS KILL ^7> {} < ^1LUDICROUS KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][6] - self.mtime[id][0])))
                     elif frags >= 8:
                         self.player(int(id)).center_print("^1H O L Y  S H I T!")
-                        self.play_sound("sound/misc/holyshit.ogg")
+                        self.play_sound("sound/misc/holyshit.wav")
                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][7] - self.mtime[id][0])))
                 return playit
 
