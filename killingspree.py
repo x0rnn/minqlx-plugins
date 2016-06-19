@@ -50,7 +50,7 @@ class killingspree(minqlx.Plugin):
     def __init__(self):
         self.add_hook("death", self.handle_death)
         self.add_hook("game_end", self.handle_game_end)
-        self.add_hook("round_end", self.handle_round_end)
+        #self.add_hook("round_end", self.handle_round_end)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
         self.add_hook("player_spawn", self.handle_player_spawn)
         self.add_hook("game_countdown", self.handle_game_countdown)
@@ -65,9 +65,15 @@ class killingspree(minqlx.Plugin):
         self.record = 0
         self.multikill = defaultdict(dict)
         self.mtime = defaultdict(dict)
+        self.roundFlag = False
 
     def handle_player_spawn(self, player):
-        self.kspree[str(player.steam_id)] = 0
+        #self.kspree[str(player.steam_id)] = 0
+        if self.roundFlag:
+            if str(player.steam_id) not in self.kspree:
+                self.kspree[str(player.steam_id)] = 0
+        else:
+            self.kspree[str(player.steam_id)] = 0
         self.multikill[str(player.steam_id)]["time"] = 0
         self.multikill[str(player.steam_id)]["frag_num"] = 0
         self.multikill[str(player.steam_id)]["timer"] = timer()
@@ -81,8 +87,9 @@ class killingspree(minqlx.Plugin):
         self.dspree.clear()
 
     def handle_round_countdown(self, round_number):
-        self.kspree.clear()
-        self.dspree.clear()
+        self.roundFlag = True
+        #self.kspree.clear()
+        #self.dspree.clear()
 
     def handle_player_disconnect(self, player, reason):
         if str(player.steam_id) in self.kspree:
@@ -111,7 +118,7 @@ class killingspree(minqlx.Plugin):
         self.kspree.clear()
         self.dspree.clear()
 
-    def handle_round_end(self, data):
+    """def handle_round_end(self, data):
         map_name = self.game.map.lower()
         for pl in self.players():
             if pl.team != "spectator":
@@ -125,7 +132,7 @@ class killingspree(minqlx.Plugin):
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
         self.kspree.clear()
-        self.dspree.clear()
+        self.dspree.clear()"""
 
     def handle_map(self, map_name, factory):
         if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
