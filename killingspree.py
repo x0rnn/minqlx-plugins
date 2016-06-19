@@ -80,7 +80,7 @@ class killingspree(minqlx.Plugin):
         self.kspree.clear()
         self.dspree.clear()
 
-    def handle_round_countdown(self):
+    def handle_round_countdown(self, round_number):
         self.kspree.clear()
         self.dspree.clear()
 
