@@ -55,6 +55,7 @@ class midair_only(minqlx.Plugin):
                 height = abs(data['KILLER']['POSITION']['Z'] - data['VICTIM']['POSITION']['Z'])
                 killer_name = data['KILLER']['NAME']
                 victim_name = data['VICTIM']['NAME']
+                players = self.players()
                 map_name = self.game.map.lower()
                 minheight = 100 #min height difference to register midairs
                 mindistance = 300 #min length distance to register midairs
@@ -70,11 +71,15 @@ class midair_only(minqlx.Plugin):
                         victim_score = self.db[PLAYER_KEY.format(v_id) + ":midair:" + k_id]
                     if distance <= self.record:
                         msg = "{} killed {} from a distance of: ^1{} ^7units. Score: ^2{}^7:^2{}".format(killer_name, victim_name, round(distance), killer_score, victim_score)
-                        self.play_sound("sound/vo_evil/holy_shit")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/vo_evil/holy_shit", p)
                         self.msg(msg)
                     elif distance > self.record:
                         msg = "^1New map record^7! {} killed {} from a distance of: ^1{} ^7units. Score: ^2{}^7:^2{}".format(killer_name, victim_name, round(distance), killer_score, victim_score)
-                        self.play_sound("sound/vo_evil/new_high_score")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/vo_evil/new_high_score", p)
                         self.msg(msg)
                         self.record = distance
 
