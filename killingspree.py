@@ -146,36 +146,49 @@ class killingspree(minqlx.Plugin):
         else:
             map_name = self.game.map.lower()
             def checkKSpree(id, name):
+                players = self.players()
                 if self.kspree[id] % 5 == 0:
                     spree_id = self.kspree[id]
                     if spree_id == 5:
                         spree_msg = "is on a killing spree!"
-                        self.play_sound("sound/misc/killingspree.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/killingspree.wav", p)
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
                     elif spree_id == 10:
                         spree_msg = "is on a rampage!"
-                        self.play_sound("sound/misc/rampage.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/rampage.wav", p)
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
                     elif spree_id == 15:
                         spree_msg = "is dominating!"
-                        self.play_sound("sound/misc/dominating.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/dominating.wav", p)
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
                     elif spree_id == 20:
                         spree_msg = "is unstoppable!"
-                        self.play_sound("sound/misc/unstoppable.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/unstoppable.wav", p)
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
                     elif spree_id == 25:
                         spree_msg = "is godlike!"
-                        self.play_sound("sound/misc/godlike.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/godlike.wav", p)
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
                     elif spree_id >= 30:
                         spree_msg = "is wicked sick!"
-                        self.play_sound("sound/misc/wickedsick.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/wickedsick.wav", p)
                         msg = "{} {} ^1{} ^7kills in a row!".format(name, spree_msg, self.kspree[id])
                         self.msg(msg)
 
@@ -222,31 +235,44 @@ class killingspree(minqlx.Plugin):
 
             def delay_announce(id):
                 def playit():
+                    players = self.players()
                     k_name = data['KILLER']['NAME']
                     frags = self.multikill[id]["frag_num"]
                     if frags == 3:
                         self.player(int(id)).center_print("^1Multikill!")
-                        self.play_sound("sound/misc/multikill.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/multikill.wav", p)
                         self.msg("!!! ^1Multi kill ^7> {} < ^1Multi kill ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][2] - self.mtime[id][0])))
                     elif frags == 4:
                         self.player(int(id)).center_print("^1Mega kill!")
-                        self.play_sound("sound/misc/megakill.ogg")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/megakill.ogg", p)
                         self.msg("!!! ^1Mega kill ^7> {} < ^1Mega kill ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][3] - self.mtime[id][0])))
                     elif frags == 5:
                         self.player(int(id)).center_print("^1ULTRA KILL!")
-                        self.play_sound("sound/misc/ultrakill.ogg")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/ultrakill.ogg", p)
                         self.msg("!!! ^1ULTRA KILL ^7> {} < ^1ULTRA KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][4] - self.mtime[id][0])))
                     elif frags == 6:
                         self.player(int(id)).center_print("^1MONSTER KILL!")
-                        self.play_sound("sound/misc/monsterkill.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/monsterkill.wav", p)
                         self.msg("!!! ^1MONSTER KILL ^7> {} < ^1MONSTER KILL^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][5] - self.mtime[id][0])))
                     elif frags == 7:
                         self.player(int(id)).center_print("^1LUDICROUS KILL!")
-                        self.play_sound("sound/misc/ludicrouskill.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/ludicrouskill.wav", p)
                         self.msg("!!! ^1LUDICROUS KILL ^7> {} < ^1LUDICROUS KILL ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][6] - self.mtime[id][0])))
                     elif frags >= 8:
                         self.player(int(id)).center_print("^1H O L Y  S H I T!")
-                        self.play_sound("sound/misc/holyshit.wav")
+                        for p in players:
+                            if self.db.get_flag(p, "essentials:sounds_enabled", default=True):
+                                self.play_sound("sound/misc/holyshit.wav", p)
                         self.msg("!!! ^1 H O L Y  S H I T ^7> {} < ^1H O L Y  S H I T ^7!!! ({} kills in {}s)".format(k_name, frags, round(self.mtime[id][7] - self.mtime[id][0])))
                 return playit
 
