@@ -3,7 +3,6 @@
 #sudo python3.5 -m pip install lxml
 #sudo python3.5 -m pip install tld
 
-
 import minqlx
 import threading
 import requests
@@ -25,13 +24,18 @@ class urltitle(minqlx.Plugin):
         url = re.findall(r'http[s]?://[^\s<>"]+|www\.[^\s<>"]+', msg)[:1]
         if not url:
             return
-        try:
-            self.getTitle(url)
-        except:
-            return
+        self.getTitle(url)
 
     @minqlx.thread
     def getTitle(self, url):
+        @minqlx.next_frame
+        def printTitle(status_code):
+            if status_code == 200:
+                title = lxml.html.fromstring(www.content)
+                self.msg("^5URL title: ^7" + title.find(".//title").text)
+            else:
+                self.msg("^5Invalid URL, status code " + str(status_code))
+
         if not url[0].lower().startswith("http"):
             url[0] = ''.join(('http://', url[0]))
         try:
@@ -47,11 +51,7 @@ class urltitle(minqlx.Plugin):
         except requests.exceptions.RequestException:
             return
         if www.status_code != requests.codes.ok:
+            printTitle(www.status_code)
             return
 
-        @minqlx.next_frame
-        def printTitle():
-            title = lxml.html.fromstring(www.content)
-            self.msg("^5URL title: ^7" + title.find(".//title").text)
-
-        printTitle()
+        printTitle(200)
