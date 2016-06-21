@@ -59,6 +59,7 @@ class urltitle(minqlx.Plugin):
             www = requests.get(url[0])
         except requests.exceptions.RequestException:
             return
+        www.connection.close() #not sure if this is necessary but just in case
         if www.status_code != requests.codes.ok:
             printTitle(www.status_code)
             return
