@@ -50,6 +50,12 @@ class urltitle(minqlx.Plugin):
         except:
             return
         try:
+            headers = requests.head(url[0]).headers.get('content-type')
+            if "text/html" not in headers:
+                return
+        except:
+            return
+        try:
             www = requests.get(url[0])
         except requests.exceptions.RequestException:
             return
