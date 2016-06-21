@@ -32,7 +32,10 @@ class urltitle(minqlx.Plugin):
         def printTitle(status_code):
             if status_code == 200:
                 title = lxml.html.fromstring(www.content)
-                self.msg("^5URL title: ^7" + title.find(".//title").text)
+                try:
+                    self.msg("^5URL title: ^7" + title.find(".//title").text)
+                except:
+                    return
             else:
                 self.msg("^5Invalid URL, status code " + str(status_code))
 
