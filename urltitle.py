@@ -56,7 +56,7 @@ class urltitle(minqlx.Plugin):
         except:
             return
         try:
-            www = requests.get(url[0], headers='{"Connection": "close"}')
+            www = requests.get(url[0], headers = {"Connection": "close"})
         except requests.exceptions.RequestException:
             return
         www.connection.close() #not sure if this is necessary but just in case
