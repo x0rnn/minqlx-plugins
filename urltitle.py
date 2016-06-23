@@ -37,7 +37,7 @@ class urltitle(minqlx.Plugin):
                 except:
                     return
             else:
-                self.msg("^5Invalid URL, status code " + str(status_code))
+                self.msg("^5Invalid URL, error code " + str(status_code))
 
         if not url[0].lower().startswith("http"):
             url[0] = ''.join(('http://', url[0]))
@@ -56,7 +56,7 @@ class urltitle(minqlx.Plugin):
         except:
             return
         try:
-            www = requests.get(url[0])
+            www = requests.get(url[0], headers='{"Connection": "close"}')
         except requests.exceptions.RequestException:
             return
         www.connection.close() #not sure if this is necessary but just in case
