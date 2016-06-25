@@ -14,13 +14,6 @@ class specs(minqlx.Plugin):
 
         self.match = False
 
-    def handle_player_disconnect(self, player, reason):
-        try:
-            del self.specpos[str(player.steam_id)]
-            del self.playerpos[str(player.steam_id)]
-        except KeyError:
-            return
-
     def cmd_specs(self, player, msg, channel):
         if player.team == "spectator":
             player.tell("You must join the game first to use this command.")
