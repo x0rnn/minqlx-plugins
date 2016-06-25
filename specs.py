@@ -4,18 +4,14 @@
 #!specall: show who every spectator is spectating
 
 import minqlx
-from collections import defaultdict
 
 class specs(minqlx.Plugin):
 
     def __init__(self):
-        self.add_hook("player_disconnect", self.handle_player_disconnect)
         self.add_command("specs", self.cmd_specs)
         self.add_command("specwho", self.cmd_specwho, usage="<id>")
         self.add_command("specall", self.cmd_specall)
 
-        self.specpos = defaultdict(dict)
-        self.playerpos = defaultdict(dict)
         self.match = False
 
     def handle_player_disconnect(self, player, reason):
@@ -73,13 +69,13 @@ class specs(minqlx.Plugin):
 
     def cmd_specall(self, player, msg, channel):
         for p in self.teams()["spectator"]:
-            self.specpos[str(p.steam_id)]["x"] = int(p.state.position.x)
-            self.specpos[str(p.steam_id)]["y"] = int(p.state.position.y)
-            self.specpos[str(p.steam_id)]["z"] = int(p.state.position.z)
+            specx = int(p.state.position.x)
+            specy = int(p.state.position.y)
+            specz = int(p.state.position.z)
             for pl in self.players():
                 if pl.team != "spectator":
-                    self.playerpos[str(pl.steam_id)]["x"] = int(pl.state.position.x)
-                    self.playerpos[str(pl.steam_id)]["y"] = int(pl.state.position.y)
-                    self.playerpos[str(pl.steam_id)]["z"] = int(pl.state.position.z)
-                    if abs(self.specpos[str(p.steam_id)]["x"] - self.playerpos[str(pl.steam_id)]["x"]) < 20 and abs(self.specpos[str(p.steam_id)]["y"] - self.playerpos[str(pl.steam_id)]["y"]) < 20 and abs(self.specpos[str(p.steam_id)]["z"] - self.playerpos[str(pl.steam_id)]["z"]) < 20:
+                    playerx = int(pl.state.position.x)
+                    playery = int(pl.state.position.y)
+                    playerz = int(pl.state.position.z)
+                    if abs(specx - playerx) < 20 and abs(specy - playery) < 20 and abs(specz - playerz) < 20:
                         player.tell("{} is spectating {}".format(p.name, pl.name))
