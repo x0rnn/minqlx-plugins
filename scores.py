@@ -1,4 +1,4 @@
-#scores.py by x0rnn, shows player/team info such as kills, deaths, damage given, damage received, etc. See: http://imgur.com/a/kSczO
+#scores.py by x0rnn, shows player/team info such as kills, deaths, damage given, damage received, etc. See: http://imgur.com/a/o2E1i
 
 import minqlx
 from operator import itemgetter
@@ -37,17 +37,17 @@ class scores(minqlx.Plugin):
 
             for pl in self.teams()["red"]:
                 red_players.append(dict(team=pl.team, name=pl.clean_name, score=pl.stats.score, kills=pl.stats.kills, deaths=pl.stats.deaths, dg=pl.stats.damage_dealt, dr=pl.stats.damage_taken, time=int(pl.stats.time / 60000)))
-                red_kills = red_kills + pl.stats.kills
-                red_deaths = red_deaths + pl.stats.deaths
-                red_dg = red_dg + pl.stats.damage_dealt
-                red_dr = red_dr + pl.stats.damage_taken
+                red_kills += pl.stats.kills
+                red_deaths += pl.stats.deaths
+                red_dg += pl.stats.damage_dealt
+                red_dr += pl.stats.damage_taken
 
             for pl in self.teams()["blue"]:
                 blue_players.append(dict(team=pl.team, name=pl.clean_name, score=pl.stats.score, kills=pl.stats.kills, deaths=pl.stats.deaths, dg=pl.stats.damage_dealt, dr=pl.stats.damage_taken, time=int(pl.stats.time / 60000)))
-                blue_kills = red_kills + pl.stats.kills
-                blue_deaths = red_deaths + pl.stats.deaths
-                blue_dg = red_dg + pl.stats.damage_dealt
-                blue_dr = red_dr + pl.stats.damage_taken
+                blue_kills += pl.stats.kills
+                blue_deaths += pl.stats.deaths
+                blue_dg += pl.stats.damage_dealt
+                blue_dr += pl.stats.damage_taken
 
             red_output = ["{:^4} | {:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {}".format("Team", "Name", "Scr", "Kll", "Dth", "DG", "DR", "Time")]
             blue_output = ["{:^4} | {:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {}".format("Team", "Name", "Scr", "Kll", "Dth", "DG", "DR", "Time")]
