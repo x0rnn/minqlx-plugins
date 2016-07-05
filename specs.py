@@ -17,11 +17,9 @@ class specs(minqlx.Plugin):
     def cmd_specs(self, player, msg, channel):
         if player.team == "spectator":
             player.tell("You must join the game first to use this command.")
-            return minqlx.RET_STOP_EVENT
-
         else:
             player.tell(", ".join([p.name for p in self.teams()["spectator"] if p.state.position == player.state.position]))
-            return minqlx.RET_STOP_EVENT
+        return minqlx.RET_STOP_ALL
 
     def cmd_specwho(self, player, msg, channel):
         if len(msg) < 2:
@@ -59,6 +57,7 @@ class specs(minqlx.Plugin):
                 player.tell("{} is not spectating anyone.".format(target_player.name))
         else:
             player.tell("{} is not a spectator.".format(target_player.name))
+        return minqlx.RET_STOP_ALL
 
     def cmd_specall(self, player, msg, channel):
         for p in self.teams()["spectator"]:
@@ -72,3 +71,4 @@ class specs(minqlx.Plugin):
                     playerz = int(pl.state.position.z)
                     if abs(specx - playerx) < 20 and abs(specy - playery) < 20 and abs(specz - playerz) < 20:
                         player.tell("{} is spectating {}".format(p.name, pl.name))
+        return minqlx.RET_STOP_ALL
