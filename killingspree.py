@@ -107,18 +107,29 @@ class killingspree(minqlx.Plugin):
                 if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
                     if self.kspree[str(pl.steam_id)] > self.record:
                         self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
+                        if not self.longest_spree:
+                            self.longest_spree = {'name': pl.name, 'ks': self.kspree[str(pl.steam_id)]}
+                        else:
+                            if self.kspree[str(pl.steam_id)] > self.longest_spree['ks']:
+                                self.longest_spree = {'name': pl.name, 'ks': self.kspree[str(pl.steam_id)]}
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
                         self.msg("This is a new map record!")
                     else:
+                        if not self.longest_spree:
+                            self.longest_spree = {'name': pl.name, 'ks': self.kspree[str(pl.steam_id)]}
+                        else:
+                            if self.kspree[str(pl.steam_id)] > self.longest_spree['ks']:
+                                self.longest_spree = {'name': pl.name, 'ks': self.kspree[str(pl.steam_id)]}
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
+
         if self.longest_spree:
             spree = self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)
             spree_record = int(spree[0][1])
             steam_id = spree[0][0].split(",")
             name = self.db.lindex("minqlx:players:{}".format(steam_id[0]), 0)
-            self.msg("Longest killing spree: {}, ^1{} ^7kills. Record: {}, ^1{} ^7kills.".format(self.longest_spree['name'], self.longest_spree['ks'], name, str(spree_record)))
+            self.msg("Longest killing spree: {}, ^1{} ^7kills. Record: {}, ^1{} ^7kills.".format(self.longest_spree['name'], self.longest_spree['ks'], name, spree_record))
         self.kspree.clear()
         self.dspree.clear()
         self.longest_spree.clear()
