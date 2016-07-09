@@ -50,7 +50,6 @@ class killingspree(minqlx.Plugin):
     def __init__(self):
         self.add_hook("death", self.handle_death)
         self.add_hook("game_end", self.handle_game_end)
-        #self.add_hook("round_end", self.handle_round_end)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
         self.add_hook("player_spawn", self.handle_player_spawn)
         self.add_hook("game_countdown", self.handle_game_countdown)
@@ -63,12 +62,12 @@ class killingspree(minqlx.Plugin):
         self.kspree = {}
         self.dspree = {}
         self.record = 0
+        self.longest_spree = {}
         self.multikill = defaultdict(dict)
         self.mtime = defaultdict(dict)
         self.roundFlag = False
 
     def handle_player_spawn(self, player):
-        #self.kspree[str(player.steam_id)] = 0
         if self.roundFlag:
             if str(player.steam_id) not in self.kspree:
                 self.kspree[str(player.steam_id)] = 0
@@ -85,11 +84,10 @@ class killingspree(minqlx.Plugin):
     def handle_game_countdown(self):
         self.kspree.clear()
         self.dspree.clear()
+        self.longest_spree.clear()
 
     def handle_round_countdown(self, round_number):
         self.roundFlag = True
-        #self.kspree.clear()
-        #self.dspree.clear()
 
     def handle_player_disconnect(self, player, reason):
         if str(player.steam_id) in self.kspree:
@@ -115,24 +113,15 @@ class killingspree(minqlx.Plugin):
                     else:
                         msg = "{}'s killing spree ended (^1{} ^7kills) by end of game.".format(pl.name, self.kspree[str(pl.steam_id)])
                         self.msg(msg)
+        if self.longest_spree:
+            spree = self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True)
+            spree_record = int(spree[0][1])
+            steam_id = spree[0][0].split(",")
+            name = self.db.lindex("minqlx:players:{}".format(steam_id[0]), 0)
+            self.msg("Longest killing spree: {}, ^1{} ^7kills. Record: {}, ^1{} ^7kills.".format(self.longest_spree['name'], self.longest_spree['ks'], name, str(spree_record)))
         self.kspree.clear()
         self.dspree.clear()
-
-    """def handle_round_end(self, data):
-        map_name = self.game.map.lower()
-        for pl in self.players():
-            if pl.team != "spectator":
-                if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
-                    if self.kspree[str(pl.steam_id)] > self.record:
-                        self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
-                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
-                        self.msg(msg)
-                        self.msg("This is a new map record!")
-                    else:
-                        msg = "{}'s killing spree ended (^1{} ^7kills) by end of round.".format(pl.name, self.kspree[str(pl.steam_id)])
-                        self.msg(msg)
-        self.kspree.clear()
-        self.dspree.clear()"""
+        self.longest_spree.clear()
 
     def handle_map(self, map_name, factory):
         if self.db.zrevrange(SPREE_KEY.format(map_name), 0, 0, withscores=True):
@@ -197,6 +186,7 @@ class killingspree(minqlx.Plugin):
                     if normal_kill:
                         if self.kspree[id] > self.record:
                             self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                            self.record = self.kspree[id]
                             msg = "{}'s killing spree ended (^1{} ^7kills), killed by {}.".format(v_name, self.kspree[id], k_name)
                             self.msg(msg)
                             self.msg("This is a new map record!")
@@ -207,6 +197,7 @@ class killingspree(minqlx.Plugin):
                         if data['KILLER'] is None:
                             if self.kspree[id] > self.record:
                                 self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                                self.record = self.kspree[id]
                                 msg = "{}'s killing spree ended (^1{} ^7kills), killed by the world.".format(v_name, self.kspree[id])
                                 self.msg(msg)
                                 self.msg("This is a new map record!")
@@ -216,12 +207,18 @@ class killingspree(minqlx.Plugin):
                         else:
                             if self.kspree[id] > self.record:
                                 self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                                self.record = self.kspree[id]
                                 msg = "{}'s killing spree ended (^1{} ^7kills), teamkilled by {}.".format(v_name, self.kspree[id], k_name)
                                 self.msg(msg)
                                 self.msg("This is a new map record!")
                             else:
                                 msg = "{}'s killing spree ended (^1{} ^7kills), teamkilled by {}.".format(v_name, self.kspree[id], k_name)
                                 self.msg(msg)
+                    if not self.longest_spree:
+                        self.longest_spree = {'name': v_name, 'ks': self.kspree[id]}
+                    else:
+                        if self.kspree[id] > self.longest_spree['ks']:
+                            self.longest_spree = {'name': v_name, 'ks': self.kspree[id]}
 
             def checkDSpree(id, name):
                 if self.dspree[id] % 5 == 0:
@@ -339,11 +336,11 @@ class killingspree(minqlx.Plugin):
             if data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
                 k_id = data['KILLER']['STEAM_ID']
                 k_name = data['KILLER']['NAME']
-                try: #if killed by bot
+                try:
                     self.kspree[k_id] = self.kspree[k_id] + 1
                     checkKSpree(k_id, k_name)
                     checkMultiKill(k_id, k_name)
-                except:
+                except: #if killed by bot (k_id = 0 is not in self.kspree)
                     pass
                 checkKSpreeEnd(v_id, v_name, k_name, True)
                 if k_id in self.dspree:
@@ -376,12 +373,8 @@ class killingspree(minqlx.Plugin):
             spree_record = int(spree[0][1])
             steam_id = spree[0][0].split(",")
             name = self.db.lindex("minqlx:players:{}".format(steam_id[0]), 0)
-            if not name:
-                msg = "Killing spree record for map '{}': ^1{} ^7kills by BOT.".format(map_name, spree_record)
-                self.msg(msg)
-            else:
-                msg = "Killing spree record for map '{}': ^1{} ^7kills by {}.".format(map_name, spree_record, name)
-                self.msg(msg)
+            msg = "Killing spree record for map '{}': ^1{} ^7kills by {}.".format(map_name, spree_record, name)
+            self.msg(msg)
         else:
             self.msg("There is no killing spree record for map '" + map_name + "' yet.")
 
