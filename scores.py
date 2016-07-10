@@ -15,8 +15,6 @@ SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm")
 EXT_SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm", "duel", "ffa")
 
 class scores(minqlx.Plugin):
-    database = Redis
-    
     def __init__(self):
         self.add_command("scores", self.cmd_scores)
 
