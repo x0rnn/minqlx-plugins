@@ -48,6 +48,7 @@ class vote(minqlx.Plugin):
                     "^5allready                 ^3- ^7ready all players")
         return minqlx.RET_STOP_ALL
 
+    @minqlx.delay(4)
     def player_loaded(self, player):
         if self.get_cvar("pmove_AirControl", bool):
             player.tell("PQL/Turbo is ^2enabled^7. To change, ^2/cv mode vql^7.")
