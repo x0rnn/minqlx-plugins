@@ -230,7 +230,7 @@ class killingspree(minqlx.Plugin):
                     else:
                         if self.kspree[id] > self.longest_spree['ks']:
                             self.longest_spree = {'name': v_name, 'ks': self.kspree[id]}
-                    self.kspree[id] = 0
+                self.kspree[id] = 0
 
             def checkDSpree(id, name):
                 if self.dspree[id] % 5 == 0:
