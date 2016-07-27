@@ -107,6 +107,7 @@ class killingspree(minqlx.Plugin):
                 if str(pl.steam_id) in self.kspree and self.kspree[str(pl.steam_id)] >= 5:
                     if self.kspree[str(pl.steam_id)] > self.record:
                         self.db.zadd(SPREE_KEY.format(map_name), self.kspree[str(pl.steam_id)], "{},{}".format(pl.steam_id, int(time.time())))
+                        self.record = self.kspree[str(pl.steam_id)]
                         if not self.longest_spree:
                             self.longest_spree = {'name': pl.name, 'ks': self.kspree[str(pl.steam_id)]}
                         else:
