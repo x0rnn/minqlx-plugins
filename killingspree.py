@@ -231,7 +231,9 @@ class killingspree(minqlx.Plugin):
                     else:
                         if self.kspree[id] > self.longest_spree['ks']:
                             self.longest_spree = {'name': v_name, 'ks': self.kspree[id]}
-                self.kspree[id] = 0
+                            
+                if id != "0":
+                    self.kspree[id] = 0
 
             def checkDSpree(id, name):
                 if self.dspree[id] % 5 == 0:
@@ -349,12 +351,10 @@ class killingspree(minqlx.Plugin):
             if data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
                 k_id = data['KILLER']['STEAM_ID']
                 k_name = data['KILLER']['NAME']
-                try:
+                if k_id != "0":
                     self.kspree[k_id] = self.kspree[k_id] + 1
                     checkKSpree(k_id, k_name)
                     checkMultiKill(k_id, k_name)
-                except: #if killed by bot (k_id = 0 is not in self.kspree)
-                    pass
                 checkKSpreeEnd(v_id, v_name, k_name, True)
                 if k_id in self.dspree:
                     if self.dspree[k_id] != 0:
