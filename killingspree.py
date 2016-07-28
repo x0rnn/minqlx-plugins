@@ -349,12 +349,10 @@ class killingspree(minqlx.Plugin):
             if data['KILLER'] is not None and not data['TEAMKILL']: #normal kill
                 k_id = data['KILLER']['STEAM_ID']
                 k_name = data['KILLER']['NAME']
-                try:
+                if k_id != "0": #ignore bots
                     self.kspree[k_id] = self.kspree[k_id] + 1
                     checkKSpree(k_id, k_name)
                     checkMultiKill(k_id, k_name)
-                except: #if killed by bot (k_id = 0 is not in self.kspree)
-                    pass
                 checkKSpreeEnd(v_id, v_name, k_name, True)
                 if k_id in self.dspree:
                     if self.dspree[k_id] != 0:
