@@ -20,6 +20,8 @@ class midair(minqlx.Plugin):
     def __init__(self):
         self.add_hook("death", self.handle_death)
         self.add_hook("map", self.handle_map)
+        self.add_hook("game_countdown", self.handle_game_countdown)
+        self.add_hook("game_end", self.handle_game_end)
         self.add_command(("topshots", "top"), self.cmd_topshots)
         self.add_command(("mytopshots", "mytop"), self.cmd_mytopshots)
         self.add_command(("kills", "killstats"), self.cmd_killstats)
@@ -27,6 +29,15 @@ class midair(minqlx.Plugin):
         self.add_command("clearkillstats", self.cmd_clearkillstats, 5)
 
         self.record = 0.0
+        self.top_midair = {}
+
+    def handle_game_countdown(self):
+        self.top_midair.clear()
+
+    def handle_game_end(self, data):
+        if self.top_midair:
+            self.msg("Top midair: {} killed {} from a distance of: ^1{} ^7units.".format(self.top_midair['k_name'], self.top_midair['v_name'], round(self.top_midair['units'])))
+        self.top_midair.clear()
 
     def handle_death(self, victim, killer, data):
         if data['KILLER'] is not None:
@@ -70,6 +81,11 @@ class midair(minqlx.Plugin):
                                 self.play_sound("sound/vo_evil/new_high_score", p)
                         self.msg(msg)
                         self.record = distance
+                    if not self.top_midair:
+                        self.top_midair = {'k_name': killer_name, 'v_name': victim_name, 'units': distance}
+                    else:
+                        if distance > self.top_midair['units']:
+                            self.top_midair = {'k_name': killer_name, 'v_name': victim_name, 'units': distance}
 
     def cmd_topshots(self, player, msg, channel):
         x = 5 #how many topshots to list
