@@ -133,7 +133,6 @@ class scores(minqlx.Plugin):
         self.add_request(player, players, self.callback_ratings)
 
     def callback_ratings(self, player, players):
-        # We check if people joined while we were requesting ratings and get them if someone did.
         teams = self.teams()
         gt = self.game.type_short
 
@@ -142,7 +141,7 @@ class scores(minqlx.Plugin):
             for pl in self.teams()["free"]:
                 players.append(dict(name=pl.clean_name, score=pl.stats.score, kills=pl.stats.kills, deaths=pl.stats.deaths, dg=pl.stats.damage_dealt, dr=pl.stats.damage_taken, elo=self.ratings[pl.steam_id][gt]["elo"], time=int(pl.stats.time / 60000)))
             output = ["{:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {:^6} | {}".format("Name", "Scr", "Kll", "Dth", "DG", "DR", "Elo", "Time")]
-            for p in sorted(players, key=itemgetter("kills"), reverse=True):
+            for p in sorted(players, key=itemgetter("score"), reverse=True):
                 output.append("{name:^31} | {score:^6} | {kills:^4} | {deaths:^4} | {dg:^6} | {dr:^6} | {elo:^6} | {time}min".format(**p))
             for count, line in enumerate(output, start=1):
                 player.tell(line)
@@ -181,9 +180,9 @@ class scores(minqlx.Plugin):
             red_output = ["{:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {:^6} | {}".format("Name", "Scr", "Kll", "Dth", "DG", "DR", "Elo", "Time")]
             blue_output = ["{:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {:^6} | {}".format("Name", "Scr", "Kll", "Dth", "DG", "DR", "Elo", "Time")]
 
-            for p in sorted(red_players, key=itemgetter("kills"), reverse=True):
+            for p in sorted(red_players, key=itemgetter("score"), reverse=True):
                 red_output.append("{name:^31} | {score:^6} | {kills:^4} | {deaths:^4} | {dg:^6} | {dr:^6} | {elo:^6} | {time}min".format(**p))
-            for p in sorted(blue_players, key=itemgetter("kills"), reverse=True):
+            for p in sorted(blue_players, key=itemgetter("score"), reverse=True):
                 blue_output.append("{name:^31} | {score:^6} | {kills:^4} | {deaths:^4} | {dg:^6} | {dr:^6} | {elo:^6} | {time}min".format(**p))
 
             if self.game.red_score > self.game.blue_score:
