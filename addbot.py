@@ -4,7 +4,7 @@
 # !botskill <thinktime>
 # server.cfg should have the following cvars set: bot_enable 1, bot_nochat 1, bot_challenge 1
 # note that adding a bot to a game will prevent the game from being ranked by qlstats.net
-# by Mino
+# by Mino, x0rnn
 
 import minqlx
 
