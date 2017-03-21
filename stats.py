@@ -5,7 +5,7 @@ import minqlx
 
 class stats(minqlx.Plugin):
     def __init__(self):
-    self.add_command("stats", self.cmd_stats, 0)
+        self.add_command("stats", self.cmd_stats, 0)
 
     def cmd_stats(self, player, msg, channel):
         msg = "{}^7: K:{}/D:{}[R:{}] KPM:{}".format(player.name, player.stats.kills, player.stats.deaths, round((int(player.stats.kills) / int(player.stats.deaths)), 2), round((int(player.stats.kills) / int(player.stats.time / 60000)), 2))
