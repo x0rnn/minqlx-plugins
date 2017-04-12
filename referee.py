@@ -220,6 +220,22 @@ class referee(minqlx.Plugin):
             else:
                 caller.tell("No player with ID: ^2" + id + "^7.")
 
+        elif re.search(r"ref put \d+ r", cmd.lower()) and caller.steam_id in self.referees:
+            id = re.search(r"\d+", cmd.lower()).group()
+            if self.player(int(id)):
+                self.msg("^6Referee ^7" + str(caller) + " moved " + self.player(int(id)).name + " to the red team.")
+                self.player(int(id)).put("red")
+            else:
+                caller.tell("No player with ID: ^2" + id + "^7.")
+
+        elif re.search(r"ref put \d+ b", cmd.lower()) and caller.steam_id in self.referees:
+            id = re.search(r"\d+", cmd.lower()).group()
+            if self.player(int(id)):
+                self.msg("^6Referee ^7" + str(caller) + " moved " + self.player(int(id)).name + " to the blue team.")
+                self.player(int(id)).put("blue")
+            else:
+                caller.tell("No player with ID: ^2" + id + "^7.")
+
         elif re.search(r"ref mute \d+", cmd.lower()) and caller.steam_id in self.referees:
             id = re.search(r"\d+", cmd.lower()).group()
             if self.player(int(id)):
@@ -362,6 +378,22 @@ class referee(minqlx.Plugin):
             if self.player(int(msg[2])):
                 self.msg("^6Referee ^7" + str(player) + " moved " + self.player(int(msg[2])).name + " to the spectators.")
                 self.player(int(msg[2])).put("spectator")
+            else:
+                player.tell("No player with ID: ^2" + msg[2] + "^7.")
+            return minqlx.RET_STOP_ALL
+
+        elif msg[1].lower() == "put" and (0 <= int(msg[2]) < 64) and (msg[3] == "r" or msg[3] == "red") and player.steam_id in self.referees:
+            if self.player(int(msg[2])):
+                self.msg("^6Referee ^7" + str(player) + " moved " + self.player(int(msg[2])).name + " to the red team.")
+                self.player(int(msg[2])).put("red")
+            else:
+                player.tell("No player with ID: ^2" + msg[2] + "^7.")
+            return minqlx.RET_STOP_ALL
+
+        elif msg[1].lower() == "put" and (0 <= int(msg[2]) < 64) and (msg[3] == "b" or msg[3] == "blue") and player.steam_id in self.referees:
+            if self.player(int(msg[2])):
+                self.msg("^6Referee ^7" + str(player) + " moved " + self.player(int(msg[2])).name + " to the blue team.")
+                self.player(int(msg[2])).put("blue")
             else:
                 player.tell("No player with ID: ^2" + msg[2] + "^7.")
             return minqlx.RET_STOP_ALL
