@@ -7,10 +7,11 @@ import threading
 import requests
 import json
 import time
+import re
 
 class tts(minqlx.Plugin):
     def __init__(self):
-
+        self.regex = re.compile('[^a-zA-Z]')
         self.add_command("tts", self.cmd_tts, 1, usage="<text>")
 
     def cmd_tts(self, player, msg, channel):
@@ -26,6 +27,7 @@ class tts(minqlx.Plugin):
         def tts(list):
             for phoneme in list:
                 if phoneme not in ",.?!":
+                    phoneme = self.regex.sub('', phoneme)
                     self.play_sound("sound/tts/" + phoneme + ".wav")
                     time.sleep(0.15)
 
