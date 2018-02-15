@@ -19,8 +19,6 @@
 # !multikills will print your multikill stats (multikills, megakills, ultrakills, etc.)
 # !clear_spree_record will clear the current map record (admins only)
 #
-# Switching teams will nullify your killing streak and it won't register as a record either.
-#
 # Use with: https://steamcommunity.com/sharedfiles/filedetails/?id=701783942
 # Add 701783942 to qlx_workshopReferences and workshop.txt
 
@@ -216,6 +214,16 @@ class killingspree(minqlx.Plugin):
                             else:
                                 msg = "{}'s killing spree ended (^1{} ^7kills), killed by the world.".format(v_name, self.kspree[id])
                                 self.msg(msg)
+                        if data['MOD'] == "SWITCHTEAM":
+                            if self.kspree[id] > self.record:
+                                self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
+                                self.record = self.kspree[id]
+                                msg = "{}'s killing spree ended (^1{} ^7kills) by teamswitch.".format(v_name, self.kspree[id])
+                                self.msg(msg)
+                                self.msg("This is a new map record!")
+                            else:
+                                msg = "{}'s killing spree ended (^1{} ^7kills) by teamswitch.".format(v_name, self.kspree[id])
+                                self.msg(msg)
                         if v_name == k_name:
                             if self.kspree[id] > self.record:
                                 self.db.zadd(SPREE_KEY.format(map_name), self.kspree[id], "{},{}".format(id, int(time.time())))
@@ -343,7 +351,7 @@ class killingspree(minqlx.Plugin):
 
             if data['SUICIDE']: #team switch
                 if data['MOD'] == "SWITCHTEAM":
-                    self.kspree[v_id] = 0
+                    checkKSpreeEnd(v_id, v_name, "switchteam", False)
                     if v_id in self.dspree:
                         if self.dspree[v_id] != 0:
                             self.dspree[v_id] = 0
