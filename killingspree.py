@@ -308,11 +308,11 @@ class killingspree(minqlx.Plugin):
                  t = self.multikill[id]["timer"]
                  current_time = time.time()
                  multikill_threshold_time = current_time - self.multikill[id]["time"]
-                 if multikill_threshold_time < 4:
+                 if multikill_threshold_time <= 4:
                      t.stopTimer()
                      self.multikill[id]["frag_num"] = self.multikill[id]["frag_num"] + 1
                      self.mtime[id].update({self.multikill[id]["frag_num"] - 1:time.time()})
-                     if multikill_threshold_time < 3:
+                     if multikill_threshold_time <= 3:
                          if self.multikill[id]["frag_num"] == 3:
                              t.startTimer(4.1, delay_announce(id))
                              if not self.db.lrange(PLAYER_KEY.format(id) + ":multikills", 0, -1):
