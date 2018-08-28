@@ -1,4 +1,4 @@
-# killingspree.py by x0rnn
+# killingspree.py by x0rnn, based on benny/bennz's kspree.lua for Enemy Territory
 # Unreal Tournament sound announcements for:
 #
 # 	5 kills in a row: killing spree
