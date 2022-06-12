@@ -175,8 +175,14 @@ class scores(minqlx.Plugin):
                 blue_dr += pl.stats.damage_taken
                 blue_elo += self.ratings[pl.steam_id][gt]["elo"]
 
-            avg_red_elo = int(red_elo / len(teams["red"]))
-            avg_blue_elo = int(blue_elo / len(teams["blue"]))
+            if not len(teams["red"]) == 0:
+                avg_red_elo = int(red_elo / len(teams["red"]))
+            else:
+                avg_red_elo = 0
+            if not len(teams["blue"]) == 0:
+                avg_blue_elo = int(blue_elo / len(teams["blue"]))
+            else:
+                avg_blue_elo = 0
             red_output = ["{:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {:^6} | {}".format("Name", "Scr", "Kll", "Dth", "DG", "DR", "Elo", "Time")]
             blue_output = ["{:^31} | {:^6} | {:^4} | {:^4} | {:^6} | {:^6} | {:^6} | {}".format("Name", "Scr", "Kll", "Dth", "DG", "DR", "Elo", "Time")]
 
