@@ -8,6 +8,7 @@ import threading
 import time
 import re
 import csv
+import os
 
 class tts(minqlx.Plugin):
     def __init__(self):
@@ -15,7 +16,7 @@ class tts(minqlx.Plugin):
         self.words_list = []
         self.phonemes_list = []
 
-        with open("tts.txt", "r", encoding="utf8") as ph:
+        with open(os.path.join(os.path.dirname(__file__), "tts.txt") , "r", encoding="utf8") as ph:
             tsv_reader = csv.DictReader(ph, delimiter="\t")
             for w in tsv_reader:
                 words_list.append(w["Word"])
@@ -26,6 +27,7 @@ class tts(minqlx.Plugin):
             return minqlx.RET_USAGE
 
         text = " ".join(msg[1:])
+        text = text.lower()
         self.getPhonemes(text, player)
         return minqlx.RET_STOP_ALL
 
