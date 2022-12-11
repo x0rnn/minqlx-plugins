@@ -38,7 +38,7 @@ class tts(minqlx.Plugin):
         phonemes = []
 
         def tts(ph_list):
-            for phoneme in list:
+            for phoneme in ph_list:
                 self.play_sound("sound/tts/" + phoneme + ".wav")
                 time.sleep(0.15)
 
