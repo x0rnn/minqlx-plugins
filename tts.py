@@ -45,7 +45,7 @@ class tts(minqlx.Plugin):
         text = re.sub(r'[.,"\-?:!;0-9]', '', text)
         text_list = text.split()
         for w in text_list:
-            if w in words_list:
+            if w in self.words_list:
                 valid_words.append(w)
             else:
                 invalid_words.append(w)
