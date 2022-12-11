@@ -13,8 +13,8 @@ import os
 class tts(minqlx.Plugin):
     def __init__(self):
         self.add_command("tts", self.cmd_tts, 1, usage="<text>")
-        self.words_list = []
-        self.phonemes_list = []
+        words_list = []
+        phonemes_list = []
 
         with open(os.path.join(os.path.dirname(__file__), "tts.txt") , "r", encoding="utf8") as ph:
             tsv_reader = csv.DictReader(ph, delimiter="\t")
