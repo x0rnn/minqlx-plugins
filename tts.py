@@ -13,14 +13,14 @@ import os
 class tts(minqlx.Plugin):
     def __init__(self):
         self.add_command("tts", self.cmd_tts, 1, usage="<text>")
-        words_list = []
-        phonemes_list = []
+        self.words_list = []
+        self.phonemes_list = []
 
         with open(os.path.join(os.path.dirname(__file__), "tts.txt") , "r", encoding="utf8") as ph:
             tsv_reader = csv.DictReader(ph, delimiter="\t")
             for w in tsv_reader:
-                words_list.append(w["Word"])
-                phonemes_list.append(w["Phonemes"])
+                self.words_list.append(w["Word"])
+                self.phonemes_list.append(w["Phonemes"])
 
     def cmd_tts(self, player, msg, channel):
         if len(msg) < 1:
@@ -54,7 +54,7 @@ class tts(minqlx.Plugin):
             player.tell("Didn't find the following words: '{}', can't do TTS.".format(' '.join(invalid_words)))
         else:
             for w in valid_words:
-                phonemes.append(phonemes_list[words_list.index(w)])
+                phonemes.append(self.phonemes_list[self.words_list.index(w)])
             ph_string = ' '.join(phonemes)
             ph_list = ph_string.split()
             tts(ph_list)
