@@ -3,6 +3,7 @@
 # !warn <id> <reason>
 # !unwarn <id> <warnings to remove>
 # !warned (to list all warned players)
+# Updated 2025-11-24: Fixed redis-py 3.0+ compatibility (zadd syntax)
 
 import minqlx
 import time
@@ -86,7 +87,8 @@ class warn(minqlx.Plugin):
         base_key = PLAYER_KEY.format(ident) + ":warnings"
         warn_id = self.db.zcard(base_key)
         db = self.db.pipeline()
-        db.zadd(base_key, time.time() + td.total_seconds(), warn_id)
+        # FIXED: Changed zadd syntax for redis-py 3.0+ compatibility
+        db.zadd(base_key, {warn_id: time.time() + td.total_seconds()})
         db.incr(PLAYER_KEY.format(ident) + ":warnings:strikes")
         warn = {"expires": expires, "reason": reason, "issued": now, "issued_by": player.steam_id}
         db.hmset(base_key + ":{}".format(warn_id), warn)
