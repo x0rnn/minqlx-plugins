@@ -3,7 +3,15 @@
 # !warn <id> <reason>
 # !unwarn <id> <warnings to remove>
 # !warned (to list all warned players)
-# Updated 2025-11-24: Fixed redis-py 3.0+ compatibility (zadd syntax)
+#
+# Changelog:
+# 2025-11-24: Fixed redis-py 3.0+ compatibility (zadd syntax)
+# 2025-12-20: Fixed multiple bugs:
+#   - Fixed critical bug in is_warned() where zrangebyscore result was treated as dict
+#   - Fixed bytes vs string issues with redis-py 3.0+ (member decoding)
+#   - Fixed hgetall() bytes keys issue
+#   - Replaced deprecated hmset() with hset(mapping=)
+#   - Added better error handling throughout
 
 import minqlx
 import time
@@ -11,6 +19,21 @@ import datetime
 
 PLAYER_KEY = "minqlx:players:{}"
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+def decode_if_bytes(value):
+    """Helper to decode bytes to string if necessary (redis-py 3.0+ compatibility)"""
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    return value
+
+
+def decode_dict(d):
+    """Helper to decode a dictionary with potentially bytes keys/values"""
+    if d is None:
+        return {}
+    return {decode_if_bytes(k): decode_if_bytes(v) for k, v in d.items()}
+
 
 class warn(minqlx.Plugin):
     
@@ -73,13 +96,18 @@ class warn(minqlx.Plugin):
 
         try:
             previous_warn = self.db.zrangebyscore(PLAYER_KEY.format(ident) + ":warnings", time.time(), "+inf", withscores=True)
-        except ValueError:
-            previous_warn = 0
+        except (ValueError, Exception):
+            previous_warn = []
 
         if previous_warn:
-            longest_warn = self.db.hgetall(PLAYER_KEY.format(ident) + ":warnings" + ":{}".format(previous_warn[-1][0]))
-            previous_expire = datetime.datetime.strptime(longest_warn["expires"], TIME_FORMAT)
-            expires = (previous_expire + td).strftime(TIME_FORMAT)
+            # Decode the warn_id from bytes if necessary
+            prev_warn_id = decode_if_bytes(previous_warn[-1][0])
+            longest_warn = decode_dict(self.db.hgetall(PLAYER_KEY.format(ident) + ":warnings" + ":{}".format(prev_warn_id)))
+            if longest_warn and "expires" in longest_warn:
+                previous_expire = datetime.datetime.strptime(longest_warn["expires"], TIME_FORMAT)
+                expires = (previous_expire + td).strftime(TIME_FORMAT)
+            else:
+                expires = (datetime.datetime.now() + td).strftime(TIME_FORMAT)
         else:
             expires = (datetime.datetime.now() + td).strftime(TIME_FORMAT)
 
@@ -88,10 +116,11 @@ class warn(minqlx.Plugin):
         warn_id = self.db.zcard(base_key)
         db = self.db.pipeline()
         # FIXED: Changed zadd syntax for redis-py 3.0+ compatibility
-        db.zadd(base_key, {warn_id: time.time() + td.total_seconds()})
+        db.zadd(base_key, {str(warn_id): time.time() + td.total_seconds()})
         db.incr(PLAYER_KEY.format(ident) + ":warnings:strikes")
-        warn = {"expires": expires, "reason": reason, "issued": now, "issued_by": player.steam_id}
-        db.hmset(base_key + ":{}".format(warn_id), warn)
+        warn_data = {"expires": expires, "reason": reason, "issued": now, "issued_by": str(player.steam_id)}
+        # FIXED: Using hset with mapping instead of deprecated hmset
+        db.hset(base_key + ":{}".format(warn_id), mapping=warn_data)
         db.execute()
         if strike + 1 < self.get_cvar("qlx_maxStrikes", int):
             self.msg("{} has been warned for: ^6{}^7, strike: ^6{}^7/^6{}^7, expires: ^6{}^7.".format(name, reason, strike + 1, self.get_cvar("qlx_maxStrikes", int), expires))
@@ -99,7 +128,7 @@ class warn(minqlx.Plugin):
             try:
                 self.kick(ident, "Banned for repeated violations: {}: warned {} times.".format(reason, strike + 1))
             except ValueError:
-                self.msg("^6{} ^7has been banned for repeated violations: ^6{}^7: warned ^6{} ^7times.".format(name, strike + 1))
+                self.msg("^6{} ^7has been banned for repeated violations: ^6{}^7: warned ^6{} ^7times.".format(name, reason, strike + 1))
 
     def cmd_unwarn(self, player, msg, channel):
         if len(msg) < 2:
@@ -124,9 +153,6 @@ class warn(minqlx.Plugin):
             name = ident
 
         base_key = PLAYER_KEY.format(ident)
-        if base_key not in self.db:
-            channel.reply("I do not know ^6{}^7.".format(name))
-            return
         
         try:
             strikes = int(self.db[base_key + ":warnings:strikes"])
@@ -134,7 +160,7 @@ class warn(minqlx.Plugin):
             strikes = 0
         
         if strikes <= 0:
-            channel.reply("^6{}^7's warnings are already at ^6{}^7.".format(name, strikes))
+            channel.reply("^6{}^7 has no warnings to remove.".format(name))
             return
 
         if len(msg) == 2:
@@ -157,32 +183,43 @@ class warn(minqlx.Plugin):
 
     def cmd_warned(self, player, msg, channel):
         playerlist = self.db.keys("minqlx:players:*:warnings:strikes")
-        tmp = ""
         tmp2 = ""
 
         for sublist in playerlist:
-            tmp = str(sublist).split(":")
+            # Decode bytes if necessary
+            sublist_str = decode_if_bytes(sublist)
+            tmp = sublist_str.split(":")
             tmp2 += str(tmp[2]) + ","
-        tmp2.split(",")
         tmp2 = tmp2[:-1]
         
-        i = 0
+        if not tmp2:
+            player.tell("^2No warned players found.")
+            return
+        
+        steamids_list = tmp2.split(",")
         player.tell("^2Warned players:\n")
-        for steamids in playerlist:
-            steamids = tmp2.split(",")
-            id_name = self.db.lindex(PLAYER_KEY.format(steamids[i]), 0)
-            active = self.db.zrangebyscore(PLAYER_KEY.format(steamids[i]) + ":warnings", time.time(), "+inf", withscores=True)
+        
+        for steamid in steamids_list:
+            id_name = self.db.lindex(PLAYER_KEY.format(steamid), 0)
+            if id_name:
+                id_name = decode_if_bytes(id_name)
+            active = self.db.zrangebyscore(PLAYER_KEY.format(steamid) + ":warnings", time.time(), "+inf", withscores=True)
             if active:
-                strike = int(self.db[PLAYER_KEY.format(steamids[i]) + ":warnings:strikes"])
+                try:
+                    strike = int(self.db[PLAYER_KEY.format(steamid) + ":warnings:strikes"])
+                except (KeyError, ValueError):
+                    strike = 0
                 if strike:
-                    longest_warn = self.db.hgetall(PLAYER_KEY.format(steamids[i]) + ":warnings" + ":{}".format(active[-1][0]))
-                    reason = longest_warn["reason"]
-                    expires = longest_warn["expires"]
-                    if strike >= self.get_cvar("qlx_maxStrikes", int):
-                        player.tell("^1Banned^7: {} ^7({}): ^6{}^7,^6 {}^7/^6{}^7.".format(id_name, steamids[i], reason, strike, self.get_cvar("qlx_maxStrikes", int)))
-                    else:
-                        player.tell("{} ^7({}): ^6{}^7,^6 {}^7/^6{}^7, expires: ^6{}^7.".format(id_name, steamids[i], reason, strike, self.get_cvar("qlx_maxStrikes", int), expires))
-            i += 1
+                    # Decode the warn_id from bytes if necessary
+                    active_warn_id = decode_if_bytes(active[-1][0])
+                    longest_warn = decode_dict(self.db.hgetall(PLAYER_KEY.format(steamid) + ":warnings" + ":{}".format(active_warn_id)))
+                    if longest_warn:
+                        reason = longest_warn.get("reason", "Unknown")
+                        expires = longest_warn.get("expires", "Unknown")
+                        if strike >= self.get_cvar("qlx_maxStrikes", int):
+                            player.tell("^1Banned^7: {} ^7({}): ^6{}^7,^6 {}^7/^6{}^7.".format(id_name, steamid, reason, strike, self.get_cvar("qlx_maxStrikes", int)))
+                        else:
+                            player.tell("{} ^7({}): ^6{}^7,^6 {}^7/^6{}^7, expires: ^6{}^7.".format(id_name, steamid, reason, strike, self.get_cvar("qlx_maxStrikes", int), expires))
 
     def is_warned(self, steam_id):
         try:
@@ -191,19 +228,35 @@ class warn(minqlx.Plugin):
             strike = 0
 
         if strike > 0:
-            warn = self.db.zrangebyscore(PLAYER_KEY.format(steam_id) + ":warnings", time.time(), "+inf", withscores=True)
-            if not warn and strike < self.get_cvar("qlx_maxStrikes", int):
+            warn_list = self.db.zrangebyscore(PLAYER_KEY.format(steam_id) + ":warnings", time.time(), "+inf", withscores=True)
+            
+            if not warn_list and strike < self.get_cvar("qlx_maxStrikes", int):
+                # Warnings have expired and player is below max strikes - clear their strikes
                 self.db.incrby(PLAYER_KEY.format(steam_id) + ":warnings:strikes", -strike)
                 return None
-            elif not warn and strike >= self.get_cvar("qlx_maxStrikes", int):
-                previous_warn = self.db.zrangebyscore(PLAYER_KEY.format(steam_id) + ":warnings", "-inf", "+inf", withscores=True)
-                expires = datetime.datetime.strptime(previous_warn["expires"], TIME_FORMAT)
-                longest_warn = self.db.hgetall(PLAYER_KEY.format(steam_id) + ":warnings" + ":{}".format(previous_warn[-1][0]))
-                return strike, longest_warn["reason"], expires
-            elif warn:
-                longest_warn = self.db.hgetall(PLAYER_KEY.format(steam_id) + ":warnings" + ":{}".format(warn[-1][0]))
-                expires = datetime.datetime.strptime(longest_warn["expires"], TIME_FORMAT)
-                if (expires - datetime.datetime.now()).total_seconds() > 0:
-                    return strike, longest_warn["reason"], expires
+            
+            elif not warn_list and strike >= self.get_cvar("qlx_maxStrikes", int):
+                # Player has max strikes but active warnings expired - they're still banned
+                # Get any warning to show the reason (even expired ones)
+                all_warns = self.db.zrangebyscore(PLAYER_KEY.format(steam_id) + ":warnings", "-inf", "+inf", withscores=True)
+                if all_warns:
+                    # FIXED: all_warns is a list of tuples [(member, score), ...], not a dict!
+                    # Get the last warning's data from the hash
+                    last_warn_id = decode_if_bytes(all_warns[-1][0])
+                    longest_warn = decode_dict(self.db.hgetall(PLAYER_KEY.format(steam_id) + ":warnings" + ":{}".format(last_warn_id)))
+                    if longest_warn and "expires" in longest_warn and "reason" in longest_warn:
+                        expires = datetime.datetime.strptime(longest_warn["expires"], TIME_FORMAT)
+                        return strike, longest_warn["reason"], expires
+                # Fallback if we can't get the warning details
+                return strike, "Multiple violations", datetime.datetime.now()
+            
+            elif warn_list:
+                # Player has active (non-expired) warnings
+                warn_id = decode_if_bytes(warn_list[-1][0])
+                longest_warn = decode_dict(self.db.hgetall(PLAYER_KEY.format(steam_id) + ":warnings" + ":{}".format(warn_id)))
+                if longest_warn and "expires" in longest_warn and "reason" in longest_warn:
+                    expires = datetime.datetime.strptime(longest_warn["expires"], TIME_FORMAT)
+                    if (expires - datetime.datetime.now()).total_seconds() > 0:
+                        return strike, longest_warn["reason"], expires
 
         return None
